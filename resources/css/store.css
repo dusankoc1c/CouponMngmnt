@@ -10,7 +10,9 @@ body {
     color: #1a1a1a;
 }
 
+
 .content {
+    overflow-x: auto;
     max-width: 1100px;
     margin: 0 auto;
     padding: 2.5rem 2rem;
@@ -65,7 +67,8 @@ body {
 }
 
 table {
-    width: 100%;
+    width: 120%;
+    min-width: 1100px;
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 12px;

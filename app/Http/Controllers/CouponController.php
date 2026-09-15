@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Bundle;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
+use App\Mail\MyEmail;
+use Illuminate\Support\Facades\Mail;
 
 class CouponController extends Controller
 {
@@ -36,7 +38,7 @@ class CouponController extends Controller
             'send_date' => 'nullable|date',
         ]);
 
-        Coupon::create([
+        $coupon = Coupon::create([
             'bundle_id' => $bundle->id,
             'code' => Coupon::generateCode($bundle->name),
             'discount_amount' => $data['discount_amount'],
@@ -45,6 +47,11 @@ class CouponController extends Controller
             'send_date' => $data['send_date'] ?? null,
         ]);
 
+        if ($coupon->receiver_email != null && $coupon->send_date == null) {
+            Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
+            $coupon->email_sent_at = now();
+            $coupon->save();
+        }
         return redirect()->route('bundle.show', $bundle)->with('success', 'Kupon je dodat.');
 
     }
@@ -108,5 +115,12 @@ class CouponController extends Controller
         $coupon->save();
 
         return redirect()->route('bundle.show', $coupon->bundle)->with('success', 'Kupon je izmenjen.');
+    }
+
+    public function unsubscribe(Coupon $coupon){
+        $coupon->subscribed = false;
+        $coupon->save();
+
+        return view('coupons.unsubscribe');
     }
 }

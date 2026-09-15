@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('send_immediately')->default(false);
             $table->boolean('is_used')->default(false);
             $table->timestamp('used_at')->nullable();
+            $table->timestamp('email_sent_at')->nullable();
             $table->timestamps();
         });
     }

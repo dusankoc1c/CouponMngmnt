@@ -13,7 +13,8 @@ class Coupon extends Model
         'bundle_id', 'code', 'discount_amount',
         'receiver_name', 'receiver_email',
         'send_date', 'send_immediately',
-        'is_used', 'used_at',
+        'is_used', 'used_at', 'email_sent_at',
+        'last_sent_at', 'subscribed',
     ];
 
     protected $casts = [
@@ -21,6 +22,9 @@ class Coupon extends Model
         'send_immediately' => 'boolean',
         'used_at' => 'datetime',
         'send_date' => 'datetime',
+        'email_sent_at' => 'datetime',
+        'last_sent_at' => 'datetime',
+        'subscribed' => 'boolean',
         'discount_amount' => 'decimal:2',
     ];
     public function bundle(): belongsTo

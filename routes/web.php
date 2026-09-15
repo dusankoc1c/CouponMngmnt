@@ -61,3 +61,6 @@ Route::post('/coupon/{coupon}/toggle-used', [CouponController::class, 'toggleUse
 
 //store new kupon
 Route::post('/bundle/{bundle}/coupon', [CouponController::class, 'store'])->name('coupon.store')->middleware('auth');
+
+//unsubscribe view
+Route::get('/coupon/{coupon}/unsubscribe', [CouponController::class, 'unsubscribe'])->name('coupons.unsubscribe')->middleware('guest');

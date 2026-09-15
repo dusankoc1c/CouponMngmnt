@@ -30,6 +30,9 @@
             <th>Send Date</th>
             <th>Status</th>
             <th>Actions</th>
+            <th>Initial Email Sent</th>
+            <th>Reminder Sent</th>
+            <th>Subscribed</th>
         </tr>
         </thead>
         <tbody>
@@ -68,6 +71,15 @@
                         </div>
                     </div>
                 </td>
+                <td>{{ $coupon->email_sent_at ? $coupon->email_sent_at->format('m/d/Y H:i') : 'Nije poslat' }}</td>
+                <td>{{$coupon->last_sent_at ? $coupon->last_sent_at->format('m/d/Y H:i') : '/'}}</td>
+                <td>
+                    @if($coupon->subscribed)
+                        <span class="badge"> Da </span>
+                    @else
+                        <span class="badge"> Ne </span>
+                    @endif
+                </td>
             </tr>
         @empty
             <tr class="empty-row">
@@ -96,7 +108,7 @@
             </div>
 
             <div class="form-group">
-                <label>Iznos ($)</label>
+                <label>Iznos</label>
                 <input type="number" step="0.01" min="0" name="discount_amount" required>
             </div>
 
@@ -106,8 +118,8 @@
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="closeModal('coupon-modal')">Otkaži</button>
-                <button type="submit" class="btn-submit-modal">Sačuvaj</button>
+                <button type="button" class="btn-cancel-modal" onclick="closeModal('coupon-modal')">Otkazi</button>
+                <button type="submit" class="btn-submit-modal">Sacuvaj</button>
             </div>
         </form>
     </div>
