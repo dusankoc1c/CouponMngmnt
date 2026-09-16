@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Bundle;
 use App\Models\Coupon;
+use Gate;
 use Illuminate\Http\Request;
-use App\Mail\MyEmail;
-use Illuminate\Support\Facades\Mail;
 
 class CouponController extends Controller
 {
@@ -31,6 +30,8 @@ class CouponController extends Controller
      */
     public function store(Request $request, Bundle $bundle)
     {
+        Gate::authorize('workWith', $bundle->store);
+
         $data = $request->validate([
             'receiver_name' => 'required|string|max:255',
             'receiver_email' => 'required|email|max:255',
@@ -47,11 +48,14 @@ class CouponController extends Controller
             'send_date' => $data['send_date'] ?? null,
         ]);
 
-        if ($coupon->receiver_email != null && $coupon->send_date == null) {
-            Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
-            $coupon->email_sent_at = now();
-            $coupon->save();
-        }
+//        if ($coupon->receiver_email != null && $coupon->send_date == null) {
+//            Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
+//            $coupon->email_sent_at = now();
+//            $coupon->save();
+//        }
+
+        $coupon->sendInititalMail();
+
         return redirect()->route('bundle.show', $bundle)->with('success', 'Kupon je dodat.');
 
     }
@@ -69,6 +73,8 @@ class CouponController extends Controller
      */
     public function edit(Coupon $coupon)
     {
+        Gate::authorize('workWith', $coupon->bundle->store);
+
         return view('coupons.edit', [
             'coupon' => $coupon,
         ]);
@@ -79,6 +85,7 @@ class CouponController extends Controller
      */
     public function update(Request $request, Coupon $coupon)
     {
+        Gate::authorize('workWith', $coupon->bundle->store);
 
         $data = $request->validate([
             'receiver_name' => 'required|string|max:255',
@@ -97,6 +104,8 @@ class CouponController extends Controller
      */
     public function destroy(Coupon $coupon)
     {
+        Gate::authorize('workWith', $coupon->bundle->store);
+
         $bundle = $coupon->bundle;
         $coupon->delete();
 

@@ -17,7 +17,12 @@
     <div class="navbar-brand">Coupon Manager</div>
 
     <div class="navbar-user">
-        <span>{{ Auth::user()->name }}</span>
+        @if (Auth::user()->role == 'superadmin')
+            <a href="{{ route('admins.index') }}" class="btn-superadmin">Admin Dash</a>
+            <a href="{{ route('invite.create') }}" class="btn-superadmin">Send Invite</a>
+        @else
+            <span>{{ Auth::user()->name }}</span>
+        @endif
     </div>
 </nav>
 
@@ -32,9 +37,15 @@
 
         @foreach ($stores as $store)
             <a href="{{ route('store.show', $store) }}" class="card-store">
+                <div class="card-store-avatar">{{ $store->user->name }}</div>
+
                 <h3>{{ $store->name }}</h3>
                 <p>{{ $store->description ?? 'Bez opisa' }}</p>
-                <span class="badge-count">{{ $store->bundles->count() }} bundle-ova</span>
+
+                <div class="card-store-meta">
+                    <span class="badge-count">{{ $store->bundles->count() }} bundle-ova</span>
+
+                </div>
             </a>
         @endforeach
     </div>

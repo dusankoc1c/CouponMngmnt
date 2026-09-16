@@ -14,6 +14,9 @@ class StorePolicy
      */
     public function workWith(User $user, Store $store): bool
     {
+        if($user->role == 'superadmin'){
+            return true;
+        }
         return $store->user->is($user);
     }
 

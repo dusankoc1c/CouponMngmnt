@@ -9,12 +9,12 @@
 <body>
 
 <div class="content">
-    <a href="{{ route('store.show', $bundle->store) }}" class="back-link">&larr; PRODAVNICA </a>
+    <a href="{{ route('store.show', $bundle->store) }}" class="back-link">&larr; Prodavnica</a>
 
     <div class="header">
         <div class="header-info">
             <h1>{{ $bundle->name }}</h1>
-            <div class="total-value">Ukupna vrednost bundle-a: <strong>${{ number_format($bundle->getTotalValue(), 2) }}</strong></div>
+            <div class="total-value">Ukupna vrednost : <strong>${{ number_format($bundle->getTotalValue(), 2) }}</strong></div>
         </div>
 
         <button type="button" class="btn-add" onclick="openModal('coupon-modal')">Dodaj Kupon</button>
@@ -29,10 +29,10 @@
             <th>Amount</th>
             <th>Send Date</th>
             <th>Status</th>
-            <th>Actions</th>
-            <th>Initial Email Sent</th>
+            <th>Initial Sent</th>
             <th>Reminder Sent</th>
             <th>Subscribed</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -47,19 +47,28 @@
                     @if ($coupon->is_used)
                         <span class="badge-used">Iskoriscen</span>
                     @else
-                        <span class="badge-unused">Nije iskorisen</span>
+                        <span class="badge-unused">Nije iskoriscen</span>
+                    @endif
+                </td>
+                <td>{{ $coupon->email_sent_at ? $coupon->email_sent_at->format('m/d/Y') : '/' }}</td>
+                <td>{{ $coupon->last_sent_at ? $coupon->last_sent_at->format('m/d/Y') : '/' }}</td>
+                <td>
+                    @if ($coupon->subscribed)
+                        <span class="badge-yes">Da</span>
+                    @else
+                        <span class="badge-no">Ne</span>
                     @endif
                 </td>
                 <td>
                     <div class="dropdown">
-                        <button type="button" class="action-link" onclick="toggleDropdown(this)">Actions </button>
+                        <button type="button" class="action-link" onclick="toggleDropdown(this)">Actions &#9662;</button>
                         <div class="dropdown-menu">
                             <a href="{{ route('coupon.edit', $coupon) }}" class="dropdown-item">Edit</a>
 
                             <form method="POST" action="{{ route('coupon.toggle-used', $coupon) }}">
                                 @csrf
                                 <button type="submit" class="dropdown-item">
-                                    {{ $coupon->is_used ? 'Oznaci kao neiskoriscen' : 'Oznaci kao iskoriscen' }}
+                                    {{ $coupon->is_used ? 'Označi kao neiskorišćen' : 'Označi kao iskorišćen' }}
                                 </button>
                             </form>
 
@@ -71,22 +80,14 @@
                         </div>
                     </div>
                 </td>
-                <td>{{ $coupon->email_sent_at ? $coupon->email_sent_at->format('m/d/Y H:i') : 'Nije poslat' }}</td>
-                <td>{{$coupon->last_sent_at ? $coupon->last_sent_at->format('m/d/Y H:i') : '/'}}</td>
-                <td>
-                    @if($coupon->subscribed)
-                        <span class="badge"> Da </span>
-                    @else
-                        <span class="badge"> Ne </span>
-                    @endif
-                </td>
             </tr>
         @empty
             <tr class="empty-row">
-                <td colspan="7">Ovaj bundle nema kupone</td>
+                <td colspan="10">Ovaj bundle nema kupone</td>
             </tr>
         @endforelse
         </tbody>
+
     </table>
 </div>
 
@@ -104,11 +105,11 @@
 
             <div class="form-group">
                 <label>Email primaoca</label>
-                <input type="email" name="receiver_email" required>
+                <input type="email" name="receiver_email">
             </div>
 
             <div class="form-group">
-                <label>Iznos</label>
+                <label>Iznos ($)</label>
                 <input type="number" step="0.01" min="0" name="discount_amount" required>
             </div>
 

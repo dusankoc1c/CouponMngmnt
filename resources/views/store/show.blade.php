@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $store->name }}</title>
     @vite(['resources/css/store.css'])
+</head>
+
 <body>
 
 <div class="content">
@@ -16,7 +18,10 @@
             <div class="total-value">Ukupna vrednost : <strong>${{ number_format($totalValue, 2) }}</strong></div>
         </div>
 
+        <button type="button" class="btn-secondary" onclick="openModal('edit-store-modal')">Izmeni prodavnicu</button>
         <button type="button" class="btn-add" onclick="openModal()">Dodaj bundle</button>
+
+
     </div>
 
     <table>
@@ -59,6 +64,10 @@
         @endforelse
         </tbody>
     </table>
+
+    <div class="export-bar">
+        <button type="button" class="btn-secondary" onclick="openModal('export-modal')">Export</button>
+    </div>
 </div>
 
 
@@ -105,8 +114,99 @@
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="closeModal()">Otkaži</button>
+                <button type="button" class="btn-cancel-modal" onclick="closeModal()">Otkazi</button>
                 <button type="submit" class="btn-submit-modal">Sačuvaj</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{--                ------MODAL ZA IZMENU--------           }}--}}
+
+<div class="modal-overlay" id="edit-store-modal">
+    <div class="modal-box">
+        <h2>Izmeni prodavnicu</h2>
+
+        <form method="POST" action="{{ route('store.update', $store) }}">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label>Naziv prodavnice</label>
+                <input type="text" name="name" value="{{ old('name', $store->name) }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Opis</label>
+                <textarea name="description">{{ old('description', $store->description) }}</textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel-modal" onclick="closeModal('edit-store-modal')">Otkaži</button>
+                <button type="submit" class="btn-submit-modal">Sačuvaj izmene</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{{------------------------MODAL ZA EXPORT--------------------}}
+<div class="modal-overlay" id="export-modal">
+    <div class="modal-box">
+        <h2>Export kupona</h2>
+        <p class="modal-subtitle">Izaberi bundle-ove za export</p>
+
+        <form method="POST" action="{{ route('store.export-codes', $store) }}" onsubmit="closeModal('export-modal')">
+            @csrf
+
+            <div class="filter-row">
+                <div class="form-group">
+                    <label>Datum Kreiranja</label>
+                    <input type="date" name="created_from"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Kranji Datum</label>
+                    <input type="date" name="created_to">
+                </div>
+            </div>
+
+            <div class="filter-row">
+                <div class="form-group">
+                    <label>Status Kupona</label>
+                    <select name="status">
+                        <option value="all">Svi</option>
+                        <option value="unused">Neiskorisceni</option>
+                        <option value="used">Iskorisceni</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Cena Od</label>
+                    <input type="number" step="0.01" name="amount_min">
+                </div>
+
+                <div class="form-group">
+                    <label>Cena Do</label>
+                    <input type="number" step="0.01" name="amount_max">
+                </div>
+            </div>
+
+
+            <div class="bundle-checkbox-list">
+                @forelse ($bundles as $bundle)
+                    <label class="bundle-checkbox-item">
+                        <input type="checkbox" name="bundle_ids[]" value="{{ $bundle->id }}">
+                        <span>{{ $bundle->name }}</span>
+                    </label>
+                @empty
+                    <p class="modal-subtitle">Nema bundle-ova za export.</p>
+                @endforelse
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel-modal" onclick="closeModal('export-modal')">Otkaži</button>
+                <button type="submit" class="btn-submit-modal">Export CSV</button>
             </div>
         </form>
     </div>

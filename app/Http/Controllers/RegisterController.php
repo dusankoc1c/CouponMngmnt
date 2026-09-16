@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invite;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
@@ -12,9 +13,16 @@ class RegisterController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('auth.register');
+        $inviteId = $request->query('invite');
+        $invite = Invite::findOrFail($inviteId);
+
+        if($invite->used_at != null){
+            abort(403, 'Invite je iskoriscen');
+        }
+
+        return view('auth.register', ['invite'=>$invite]);
     }
 
     /**
@@ -30,17 +38,26 @@ class RegisterController extends Controller
      */
     public function store(Request $request)
     {
+        $invite = Invite::findOrFail($request->invite_id);
+
+        if($invite->used_at != null){
+            abort(403, 'Invite je iskoriscen');
+        }
+
         $validatedData = request()->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed'
         ]);
 
         $user = User::create([
             'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
+            'email' => $invite->email,
             'password' => Hash::make($validatedData['password']),
+            'role' => 'admin'
         ]);
+
+        $invite->used_at = now();
+        $invite->save();
 
         Auth::login($user);
 

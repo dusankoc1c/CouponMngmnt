@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Mail\MyEmail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Str;
 
 class Coupon extends Model
@@ -42,5 +45,30 @@ class Coupon extends Model
         } while (self::where('code', $code)->exists());
 
         return $code;
+    }
+
+
+    // slanje inicijalnog mejla ako nije zakazan T/F izvuceno iz kontrollera
+    public function sendInititalMail(): bool
+    {
+        if ($this->receiver_email == null) {
+            return false;
+        }
+        if ($this->send_date != null) {
+            return false;
+        }
+
+        try {
+            Mail::to($this->receiver_email)->send(new MyEmail($this));
+
+            $this->email_sent_at = now();
+            $this->save();
+
+            Log::info('Poslat mejl : ' . $this->code);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage() . $this->code);
+        }
+
+        return true;
     }
 }

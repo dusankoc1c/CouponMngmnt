@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\MyEmail;
 use App\Models\Bundle;
 use App\Models\Coupon;
 use App\Models\Store;
+use Gate;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Log;
 
 class BundleController extends Controller
@@ -33,6 +32,7 @@ class BundleController extends Controller
      */
     public function store(Request $request, Store $store)
     {
+        Gate::authorize('workWith', $store);
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
@@ -62,25 +62,53 @@ class BundleController extends Controller
                     'send_date' => $couponData['send_date'] ?? null,
                 ]);
 
-                if ($coupon->receiver_email != null && $coupon->send_date == null) {
-                    Log::info('treba da se posalje kupon ovaj - ' . $coupon->code . ' u ' . now());
+//                if ($coupon->receiver_email != null && $coupon->send_date == null) {
+//                    Log::info('treba da se posalje kupon ovaj - ' . $coupon->code . ' u ' . now());
+//
+//                    try {
+//                        Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
+//
+//                        $coupon->email_sent_at = now();
+//                        $coupon->save();
+//
+//                        Log::info('poslat kupon : ' . $coupon->code . now());
+//                    } catch (\Exception $e) {
+//                        Log::error('nije se poslao: ' . $coupon->code . $e->getMessage());
+//                    }
+//
+//                    sleep(1);
+//                }
 
-                    try {
-                        Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
+                $emailAtmpt = $coupon->sendInititalMail();
 
-                        $coupon->email_sent_at = now();
-                        $coupon->save();
-
-                        Log::info('poslat kupon : ' . $coupon->code . now());
-                    } catch (\Exception $e) {
-                        Log::error('nije se poslao: ' . $coupon->code . $e->getMessage());
-                    }
-
+                if($emailAtmpt){
                     sleep(1);
                 }
             }
         }
 
         return redirect()->route('store.show', $store)->with('success', 'Bundle je uspesno kreiran.');
+    }
+
+    public function show(Bundle $bundle)
+    {
+        Gate::authorize('workWith', $bundle->store);
+
+        $coupons = $bundle->coupons;
+
+        return view('bundles.show', [
+            'bundle' => $bundle,
+            'coupons' => $coupons,
+        ]);
+    }
+
+
+    public function destroy(Bundle $bundle)
+    {
+        Gate::authorize('workWith', $bundle->store);
+
+        $bundle->delete();
+
+        return redirect()->route('store.show', $bundle->store)->with('success', 'bundle deleted');
     }
 }
