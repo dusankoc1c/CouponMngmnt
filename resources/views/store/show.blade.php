@@ -20,8 +20,6 @@
 
         <button type="button" class="btn-secondary" onclick="openModal('edit-store-modal')">Izmeni prodavnicu</button>
         <button type="button" class="btn-add" onclick="openModal()">Dodaj bundle</button>
-
-
     </div>
 
     <table>
@@ -113,6 +111,26 @@
                 </table>
             </div>
 
+            <div class="coupons-section">
+                <div class="coupons-section-header">
+                    <h3>Mass Add Kupona</h3>
+                    <button type="button" class="btn-small" onclick="addTierRow()">+ Dodaj </button>
+                </div>
+
+                <table class="tier-table">
+                    <thead>
+                    <tr>
+                        <th>Broj kupona</th>
+                        <th>Iznos ($) po kuponu</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="tiers-tbody"></tbody>
+                </table>
+
+
+            </div>
+
             <div class="modal-actions">
                 <button type="button" class="btn-cancel-modal" onclick="closeModal()">Otkazi</button>
                 <button type="submit" class="btn-submit-modal">Sačuvaj</button>
@@ -121,7 +139,7 @@
     </div>
 </div>
 
-{{--                ------MODAL ZA IZMENU--------           }}--}}
+{{-- MODAL ZA IZMENU --}}
 
 <div class="modal-overlay" id="edit-store-modal">
     <div class="modal-box">
@@ -150,7 +168,7 @@
 </div>
 
 
-{{------------------------MODAL ZA EXPORT--------------------}}
+{{-- MODAL ZA EXPORT --}}
 <div class="modal-overlay" id="export-modal">
     <div class="modal-box">
         <h2>Export kupona</h2>
@@ -166,7 +184,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Kranji Datum</label>
+                    <label>Krajnji Datum</label>
                     <input type="date" name="created_to">
                 </div>
             </div>
@@ -192,7 +210,6 @@
                 </div>
             </div>
 
-
             <div class="bundle-checkbox-list">
                 @forelse ($bundles as $bundle)
                     <label class="bundle-checkbox-item">
@@ -205,6 +222,7 @@
             </div>
 
             <div class="modal-actions">
+                <button type="button" class="btn-cancel-modal" onclick="clearExportFilters('export-modal')">Obriši filtere</button>
                 <button type="button" class="btn-cancel-modal" onclick="closeModal('export-modal')">Otkaži</button>
                 <button type="submit" class="btn-submit-modal">Export CSV</button>
             </div>

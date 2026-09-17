@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\InviteRequest;
 use App\Mail\InviteMail;
 use App\Models\Invite;
 use Illuminate\Http\Request;
@@ -28,11 +29,9 @@ class InviteController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(InviteRequest $request)
     {
-        $data = $request->validate([
-            'email' => 'required|email|max:255|unique:invites',
-        ]);
+        $data = $request->validated();
 
         $invite = Invite::create([
             'email' => $data['email'],

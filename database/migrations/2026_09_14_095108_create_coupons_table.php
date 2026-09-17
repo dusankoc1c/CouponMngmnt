@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('bundle_id')->constrained()->cascadeOnDelete();
             $table->string('code')->unique();
             $table->decimal('discount_amount', 8, 2);
-            $table->string('receiver_name');
-            $table->string('receiver_email');
+            $table->string('receiver_name')->nullable();
+            $table->string('receiver_email')->nullable();
             $table->timestamp('send_date')->nullable();
             $table->boolean('send_immediately')->default(false);
             $table->boolean('is_used')->default(false);

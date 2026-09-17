@@ -33,5 +33,14 @@
         <a href="/" class="back-link"> Nazad na pocetnu -></a>
     </form>
 </div>
+
+<script>
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
+
 </body>
 </html>

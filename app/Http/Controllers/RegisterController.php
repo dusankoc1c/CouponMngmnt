@@ -7,6 +7,7 @@ use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\RegisterRequest;
 
 class RegisterController extends Controller
 {
@@ -36,18 +37,11 @@ class RegisterController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(RegisterRequest $request)
     {
         $invite = Invite::findOrFail($request->invite_id);
 
-        if($invite->used_at != null){
-            abort(403, 'Invite je iskoriscen');
-        }
-
-        $validatedData = request()->validate([
-            'name' => 'required|string|max:255',
-            'password' => 'required|string|min:6|confirmed'
-        ]);
+        $validatedData = $request->validated();
 
         $user = User::create([
             'name' => $validatedData['name'],

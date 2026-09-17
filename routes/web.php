@@ -15,13 +15,14 @@ Route::get('/', function () {
 
 
 // prikaz Register Stranice
-Route::get('/register',[RegisterController::class, 'index'])->name('register')->middleware(['guest', 'signed']);
+Route::get('/register', [RegisterController::class, 'index'])->name('register')->middleware(['guest', 'signed', 'nocache']);
+
 // Register
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store')->middleware('guest');
 
 
 // prikaz Login Stranice
-Route::get('/login', [LoginController::class, 'index'])->name('login')->middleware('guest');
+Route::get('/login', [LoginController::class, 'index'])->name('login')->middleware(['guest', 'nocache']);
 // Login
 Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware('guest');
 //Logout
@@ -35,7 +36,7 @@ Route::get('/dashboard', function () {
         $stores = auth()->user()->stores;
     }
     return view('admin.dashboard', ['stores' => $stores]);
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth', 'nocache'])->name('dashboard');
 
 //Store Create
 Route::get('/store', [StoreController::class, 'create'])->name('store.create')->middleware('auth');
@@ -85,3 +86,7 @@ Route::post('superadmin/admins/{user}', [AdminController::class, 'edit'])->name(
 
 //-----------------EXPORT---------------
 Route::post('/store/{store}/export-codes', [StoreController::class, 'exportCodes'])->name('store.export-codes')->middleware('auth');
+// SUPERADMIN EXPORT ALL
+Route::post('/superadmin/export-all', [AdminController::class, 'exportAll'])->name('superadmin.export-all')->middleware(['auth', 'superadmin']);
+// EDIT ADMIN-a SUPERADMIN
+Route::put('superadmin/admins/{admin}', [AdminController::class, 'update'])->name('admins.update')->middleware(['auth', 'superadmin']);
