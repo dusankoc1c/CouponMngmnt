@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\CouponHelper;
+use App\Http\Requests\ImportCodesRequest;
 use App\Http\Requests\StoreCouponRequest;
 use App\Http\Requests\UpdateCouponRequest;
 use App\Models\Bundle;
@@ -86,5 +87,15 @@ class CouponController extends Controller
     public function unsubscribe(Coupon $coupon){
         $this->couponService->unsubscribeCoupon($coupon);
         return view('coupons.unsubscribe');
+    }
+
+    public function importCodes(ImportCodesRequest $request, Bundle $bundle){
+        $file = $request->file('csv_file');
+
+        $result = $this->couponService->importCsv($bundle, $file);
+
+        $msg = 'preskoceno ' . $result['skippedCount'];
+
+        return redirect()->route('bundle.show', $bundle)->with('success', $msg);
     }
 }

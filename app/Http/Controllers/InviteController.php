@@ -35,6 +35,7 @@ class InviteController extends Controller
 
         $invite = Invite::create([
             'email' => $data['email'],
+            'value_limit' => $data['value_limit'] ?? null,
         ]);
 
         $registeredUrl = \URL::temporarySignedRoute(

@@ -25,8 +25,8 @@ class CouponReminder extends Mailable
     public function __construct(Coupon $coupon)
     {
         $this->coupon = $coupon;
-        if($coupon->bundle->expires_at != null){
-            $this->daniDoIsteka = now()->diffInDays($coupon->bundle->expires_at, false);
+        if ($coupon->expires_at != null) {
+            $this->daniDoIsteka = now()->diffInDays($coupon->expires_at, false);
         }else{
             $this->daniDoIsteka = -1;
         }

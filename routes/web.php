@@ -31,7 +31,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->mid
 //Dashboard
 Route::get('/dashboard', function () {
     if (auth()->user()->role == 'superadmin') {
-        $stores = App\Models\Store::all();
+        $stores = App\Models\Store::whereHas('user')->get();
     } else {
         $stores = auth()->user()->stores;
     }
@@ -90,3 +90,7 @@ Route::post('/store/{store}/export-codes', [StoreController::class, 'exportCodes
 Route::post('/superadmin/export-all', [AdminController::class, 'exportAll'])->name('superadmin.export-all')->middleware(['auth', 'superadmin']);
 // EDIT ADMIN-a SUPERADMIN
 Route::put('superadmin/admins/{admin}', [AdminController::class, 'update'])->name('admins.update')->middleware(['auth', 'superadmin']);
+
+
+//----------------IMPORT------------------
+Route::post('bundle/{bundle}/import-codes', [CouponController::class, 'importCodes'])->name('coupon.import')->middleware('auth');

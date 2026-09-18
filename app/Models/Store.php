@@ -11,7 +11,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Store extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['user_id', 'name', 'description'];
+    protected $fillable = ['user_id', 'name', 'description', 'value_limit'];
+
+    protected $casts = [
+        'value_limit' => 'decimal:2',
+    ];
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -104,6 +104,6 @@ class StoreController extends Controller
     {
         $data = $request->validated();
 
-        $this->storeService->exportCodesToCsv($store, $data['bundles'], $request);
+        return $this->storeService->exportCodesToCsv($store, $data['bundle_ids'], $request);
     }
 }

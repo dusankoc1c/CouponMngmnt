@@ -15,11 +15,27 @@
     <div class="header">
         <div class="header-info">
             <h1>{{ $store->name }}</h1>
-            <div class="total-value">Ukupna vrednost : <strong>${{ number_format($totalValue, 2) }}</strong></div>
+            <div class="stat-box">
+                <span class="stat-label">Ukupna Vrednost Kupona :</span>
+                <span class="stat-value"><strong>${{ number_format($totalValue, 2) }}</strong></span>
+            </div>
+
+            @if($store->value_limit != null)
+                <div class="stat-box">
+                    <span class="stat-label">Limit :</span>
+                    <span class="stat-value"><strong>${{ number_format($store->value_limit, 2) }}</strong></span>
+                </div>
+
+                <div class="stat-box">
+                    <span class="stat-label">Preostalo :</span>
+                    <span class="stat-value">${{ number_format($store->value_limit - $totalValue, 2) }}</span>
+                </div>
+            @endif
         </div>
 
         <button type="button" class="btn-secondary" onclick="openModal('edit-store-modal')">Izmeni prodavnicu</button>
         <button type="button" class="btn-add" onclick="openModal()">Dodaj bundle</button>
+
     </div>
 
     <table>
@@ -72,6 +88,16 @@
 <div class="modal-overlay" id="bundle-modal">
     <div class="modal-box">
         <h2>Novi bundle</h2>
+
+        @if ($errors->any())
+            <div class="errors">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form method="POST" action="{{ route('bundle.store', $store) }}">
             @csrf
@@ -144,6 +170,16 @@
 <div class="modal-overlay" id="edit-store-modal">
     <div class="modal-box">
         <h2>Izmeni prodavnicu</h2>
+
+        @if ($errors->any())
+            <div class="errors">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form method="POST" action="{{ route('store.update', $store) }}">
             @csrf
@@ -229,6 +265,15 @@
         </form>
     </div>
 </div>
+
+
+@if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            openModal('bundle-modal');
+        });
+    </script>
+@endif
 
 @vite(['resources/js/addBundle.js'])
 

@@ -2,17 +2,18 @@
 
 namespace App\Http\Requests;
 
+use Gate;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class InviteRequest extends FormRequest
+class ImportCodesRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return Gate::allows('workWith', $this->route('bundle')->store);
     }
 
     /**
@@ -23,8 +24,7 @@ class InviteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|max:255|unique:invites',
-            'value_limit'=>'nullable|numeric|min:0',
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
         ];
     }
 }

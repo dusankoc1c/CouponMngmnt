@@ -28,6 +28,11 @@
             <input type="email" name="email" value="{{ old('email') }}">
         </div>
 
+        <div class="form-group">
+            <label>Value Limit</label>
+            <input type="number" step="0.1" min="0" name="value_limit" value="{{ old('value_limit') }}">
+        </div>
+
         <button type="submit">Posalji invite</button>
     </form>
 </div>

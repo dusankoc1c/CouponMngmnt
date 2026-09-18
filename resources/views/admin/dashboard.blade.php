@@ -38,13 +38,16 @@
 
         @foreach ($stores as $store)
             <a href="{{ route('store.show', $store) }}" class="card-store">
-                <div class="card-store-avatar">{{ $store->user->name }}</div>
+                <div class="card-store-avatar">{{ $store->user?->name ?? '?' }}</div>
 
                 <h3>{{ $store->name }}</h3>
                 <p>{{ $store->description ?? 'Bez opisa' }}</p>
 
                 <div class="card-store-meta">
                     <span class="badge-count">{{ $store->bundles->count() }} bundle-ova</span>
+                    @if ($store->value_limit !== null)
+                        <span class="store-owner">Limit: ${{ number_format($store->value_limit, 2) }}</span>
+                    @endif
                 </div>
             </a>
         @endforeach

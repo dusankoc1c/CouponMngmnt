@@ -36,6 +36,8 @@ class StoreBundleRequest extends FormRequest
             'tiers' => 'nullable|array',
             'tiers.*.quantity' => 'required_with:tiers|integer|min:1',
             'tiers.*.amount' => 'required_with:tiers|numeric|min:0',
+            'coupons.*.expires_at' => 'nullable|date',
+            'tiers.*.expires_at' => 'nullable|date',
         ];
     }
 }

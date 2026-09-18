@@ -29,4 +29,9 @@ class EloquentCouponRepo implements CouponRepositoryInterface
     {
         return Coupon::find($id);
     }
+
+    public function findByCode(string $code): ?Coupon
+    {
+        return Coupon::where('code', $code)->first();
+    }
 }

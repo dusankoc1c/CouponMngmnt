@@ -19,6 +19,7 @@ function addCouponRow() {
         '<td><input type="email" name="coupons[' + couponIndex + '][receiver_email]"></td>' +
         '<td><input type="number" step="0.01" min="0" name="coupons[' + couponIndex + '][discount_amount]" required></td>' +
         '<td><input type="date" name="coupons[' + couponIndex + '][send_date]"></td>' +
+        '<td><input type="date" name="coupons[' + couponIndex + '][expires_at]"></td>' +
         '<td><button type="button" class="btn-remove-row" onclick="this.closest(\'tr\').remove()">&times;</button></td>';
 
     tbody.appendChild(row);
@@ -55,6 +56,7 @@ function addTierRow() {
     row.innerHTML =
         '<td><input type="number" min="1" step="1" name="tiers[' + tierIndex + '][quantity]" oninput="updateTierTotal()" required></td>' +
         '<td><input type="number" min="0" step="0.01" name="tiers[' + tierIndex + '][amount]" oninput="updateTierTotal()" required></td>' +
+        '<td><input type="date" name="tiers[' + tierIndex + '][expires_at]"></td>' +
         '<td><button type="button" class="btn-remove-row" onclick="removeTierRow(this)">&times;</button></td>';
 
     tbody.appendChild(row);

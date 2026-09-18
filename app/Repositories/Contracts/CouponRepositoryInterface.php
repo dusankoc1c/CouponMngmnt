@@ -13,4 +13,6 @@ interface CouponRepositoryInterface
     public function delete(Coupon $coupon): void;
 
     public function findById(int $id): ?Coupon;
+
+    public function findByCode(string $code): ?Coupon;
 }

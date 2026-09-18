@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Repositories\Contracts\CouponRepositoryInterface;
 use App\Repositories\Contracts\StoreRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StoreService
@@ -22,6 +23,7 @@ class StoreService
             'user_id' => $user->id,
             'name' => $data['name'],
             'description' => $data['description'],
+            'value_limit' => $user->default_store_value_limit
         ]);
     }
 
@@ -42,6 +44,22 @@ class StoreService
         }
 
         return $total;
+    }
+
+    public function assertCanAddValue(Store $store, float $additionalAmount): void
+    {
+        if($store->value_limit == null){
+            return;
+        }
+
+        $currentTotalValue = $this->calculateTotalValue($store);
+        $newTotalValue = $currentTotalValue + $additionalAmount;
+
+        if($newTotalValue > $store->value_limit){
+            throw ValidationException::withMessages([
+                'discount_amount' => 'Vrednost je premasila VALUE LIMIT zadatat od Super Admina'
+            ]);
+        }
     }
 
     public function exportCodesToCsv(Store $store, array $bundleIds, Request $request): StreamedResponse

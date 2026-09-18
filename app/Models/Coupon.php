@@ -18,9 +18,9 @@ class Coupon extends Model
     protected $fillable = [
         'bundle_id', 'code', 'discount_amount',
         'receiver_name', 'receiver_email',
-        'send_date', 'send_immediately',
+        'send_date', 'send_immediately', 'expires_at',
         'is_used', 'used_at', 'email_sent_at',
-        'last_sent_at', 'subscribed',
+        'last_sent_at', 'subscribed', 'is_expired',
     ];
 
     protected $casts = [
@@ -28,9 +28,11 @@ class Coupon extends Model
         'send_immediately' => 'boolean',
         'used_at' => 'datetime',
         'send_date' => 'datetime',
+        'expires_at' => 'datetime',
         'email_sent_at' => 'datetime',
         'last_sent_at' => 'datetime',
         'subscribed' => 'boolean',
+        'is_expired' => 'boolean',
         'discount_amount' => 'decimal:2',
     ];
     public function bundle(): belongsTo
