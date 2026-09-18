@@ -19,15 +19,15 @@
  - Slanje vise kupona na mail ako se kreiraju pri kreiranju bundl-a, al za malo (FIX)
 
 ## 17. Septembar
-    - popravljenje rute za backlink (valjda)
-    - dodavanje vise kupona od jednom kada se kreira bundle (bez receivera)
-    - Superadmin edit podataka drugih admina
-    - Refresh filtera za CSv export
-    - Export svih prodavnica od jednom za Superadmina
-    - Uvedene Request klase za validaciju 
-    - Service-Repo refaktor (Store, Bundle, Coupon)
-    - Helper klase (Coupon code generator, CSV export)
-    - Soft delete 
+- popravljenje rute za backlink (valjda)
+- dodavanje vise kupona od jednom kada se kreira bundle (bez receivera)
+- Superadmin edit podataka drugih admina
+- Refresh filtera za CSv export
+- Export svih prodavnica od jednom za Superadmina
+- Uvedene Request klase za validaciju 
+- Service-Repo refaktor (Store, Bundle, Coupon)
+- Helper klase (Coupon code generator, CSV export)
+- Soft delete 
 
 ## 18. Septembar
 
