@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Helpers\CsvExportHelper;
+use App\Helpers\EmailTemplateHelper;
 use App\Models\Coupon;
 use App\Models\Store;
 use App\Models\User;
@@ -90,5 +91,31 @@ class StoreService
         $coupons = $query->get();
 
         return CsvExportHelper::buildCsvExport($coupons, false);
+    }
+
+    public function updateEmailTemplate(Store $store, array $data): Store
+    {
+        return $this->storeRepository->update($store, [
+            'initial_email_template' => $data['initial_email_template'],
+            'reminder_email_template' => $data['reminder_email_template'],
+        ]);
+    }
+
+    public function getInitialEmailTemplate(Store $store): string
+    {
+        if ($store->initial_email_template != null) {
+            return $store->initial_email_template;
+        }
+
+        return EmailTemplateHelper::getDefaultInitialTemplate();
+    }
+
+    public function getReminderEmailTemplate(Store $store): string
+    {
+        if ($store->reminder_email_template != null) {
+            return $store->reminder_email_template;
+        }
+
+        return EmailTemplateHelper::getDefaultReminderTemplate();
     }
 }

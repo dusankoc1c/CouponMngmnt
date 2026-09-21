@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Store extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['user_id', 'name', 'description', 'value_limit'];
+    protected $fillable = ['user_id', 'name', 'description', 'value_limit', 'initial_email_template', 'reminder_email_template'];
 
     protected $casts = [
         'value_limit' => 'decimal:2',

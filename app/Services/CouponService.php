@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Helpers\CouponHelper;
+use App\Mail\CouponReminder;
+use App\Mail\MyEmail;
 use App\Models\Bundle;
 use App\Models\Coupon;
 use App\Repositories\Contracts\CouponRepositoryInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
+use Mail;
 
 class CouponService
 {
@@ -232,5 +235,64 @@ class CouponService
         throw ValidationException::withMessages([
             'expires_at' => 'Datum isteka je obavezan',
         ]);
+    }
+
+
+    public function assertResend(Coupon $coupon) : void
+    {
+        if($coupon->receiver_email == null){
+            throw ValidationException::withMessages([
+                'receiver_email' => 'Nema mail primaoca',
+            ]);
+        }
+
+        if($coupon->is_used == true){
+            throw ValidationException::withMessages([
+                'is_used' => "Kupon je iskoriscen"
+            ]);
+        }
+
+        if($coupon->is_expired == true){
+            throw ValidationException::withMessages([
+                'is_expired' => "Kupon je zastareo"
+            ]);
+        }
+    }
+    public function resendInitialMail(Coupon $coupon) : void
+    {
+        $this->assertResend($coupon);
+        Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
+        $coupon->email_sent_at = now();
+        $coupon->save();
+    }
+    public function resendReminderMail(Coupon $coupon) : void
+    {
+        $this->assertResend($coupon);
+        Mail::to($coupon->receiver_email)->send(new CouponReminder($coupon));
+        $coupon->last_sent_at = now();
+        $coupon->save();
+    }
+    public function resendNeededMail(Coupon $coupon) : bool
+    {
+        if($coupon->receiver_email == null){
+            return false;
+        }
+        if($coupon->is_used){
+            return false;
+        }
+        if($coupon->is_expired){
+            return false;
+        }
+        if ($coupon->email_sent_at == null) {
+            Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
+            $coupon->email_sent_at = now();
+            $coupon->save();
+        } else {
+            Mail::to($coupon->receiver_email)->send(new CouponReminder($coupon));
+            $coupon->last_sent_at = now();
+            $coupon->save();
+        }
+
+        return true;
     }
 }

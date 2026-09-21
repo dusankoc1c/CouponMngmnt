@@ -28,7 +28,7 @@ class AdminService
 
     public function updateAdmin(User $admin, UpdateAdminRequest $data): User
     {
-        if ($admin->role === 'superadmin') {
+        if ($admin->hasRole('superadmin')) {
             abort(403, 'Nije moguce menjati superadmin nalog');
         }
 
@@ -40,7 +40,7 @@ class AdminService
 
     public function deleteAdmin(User $admin): void
     {
-        if ($admin->role === 'superadmin') {
+        if ($admin->hasRole('superadmin')) {
             abort(403, 'Nije moguce menjati superadmin nalog');
         }
 

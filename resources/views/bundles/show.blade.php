@@ -9,6 +9,15 @@
 <body>
 
 <div class="content">
+    @if ($errors->any())
+        <div class="errors">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <a href="{{ route('store.show', $bundle->store) }}" class="back-link">&larr; Prodavnica</a>
 
     <div class="header">
@@ -19,6 +28,10 @@
 
         <button type="button" class="btn-secondary" onclick="openModal('import-csv-modal')">Import from CSV</button>
         <button type="button" class="btn-add" onclick="openModal('coupon-modal')">Dodaj Kupon</button>
+        <form method="POST" action="{{ route('bundle.resend-all', $bundle) }}" onsubmit="return confirm('Poslati mejlove svim kuponima u ovom bundle-u?')" style="display:inline;">
+            @csrf
+            <button type="submit" class="btn-secondary">Resend All</button>
+        </form>
     </div>
 
     <table>
@@ -76,6 +89,18 @@
                                     {{ $coupon->is_used ? 'Označi kao neiskorišćen' : 'Označi kao iskorišćen' }}
                                 </button>
                             </form>
+
+                            @if ($coupon->receiver_email && !$coupon->is_used && !$coupon->is_expired)
+                                <form method="POST" action="{{ route('coupon.resend-initial', $coupon) }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item">Resend Initial</button>
+                                </form>
+
+                                <form method="POST" action="{{ route('coupon.resend-reminder', $coupon) }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item">Resend Reminder</button>
+                                </form>
+                            @endif
 
                             <form method="POST" action="{{ route('coupon.destroy', $coupon) }}" onsubmit="return confirm('Obrisi kupon?')">
                                 @csrf

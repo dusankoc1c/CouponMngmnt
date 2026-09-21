@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Repositories\Contracts\AdminRepositoryInterface;
 use App\Repositories\Contracts\BundleRepositoryInterface;
 use App\Repositories\Contracts\CouponRepositoryInterface;
@@ -10,6 +11,7 @@ use App\Repositories\EloquentAdminRepo;
 use App\Repositories\EloquentBundleRepo;
 use App\Repositories\EloquentCouponRepo;
 use App\Repositories\EloquentStoreRepo;
+use Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::before(function (User $user, string $ability) {
+            if ($user->hasRole('superadmin')) {
+                return true;
+            }
+
+            return null;
+        });
     }
 }

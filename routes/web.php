@@ -94,3 +94,12 @@ Route::put('superadmin/admins/{admin}', [AdminController::class, 'update'])->nam
 
 //----------------IMPORT------------------
 Route::post('bundle/{bundle}/import-codes', [CouponController::class, 'importCodes'])->name('coupon.import')->middleware('auth');
+
+// -----------RESEND ALL ----------------------
+Route::post('coupon/{coupon}/resend-initial', [CouponController::class, 'resendInitial'])->name('coupon.resend-initial')->middleware('auth');
+Route::post('coupon/{coupon}/resend-reminder', [CouponController::class, 'resendReminder'])->name('coupon.resend-reminder')->middleware('auth');
+Route::post('/bundle/{bundle}/resend-all', [BundleController::class, 'resendAll'])->name('bundle.resend-all')->middleware('auth');
+
+
+//------------EMAIL UPDATE TEMPLATE---------
+Route::put('/store/{store}/email-templates', [StoreController::class, 'updateEmailTemplates'])->name('store.update-email-templates')->middleware('auth');

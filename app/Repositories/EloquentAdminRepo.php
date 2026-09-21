@@ -13,7 +13,7 @@ class EloquentAdminRepo implements AdminRepositoryInterface
 {
     public function getAllAdmins(): Collection
     {
-        return User::where('role', 'admin')->get();
+        return User::role('admin')->get();
     }
     public function update(User $admin, array $data): User
     {

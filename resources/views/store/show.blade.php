@@ -15,6 +15,7 @@
     <div class="header">
         <div class="header-info">
             <h1>{{ $store->name }}</h1>
+
             <div class="stat-box">
                 <span class="stat-label">Ukupna Vrednost Kupona :</span>
                 <span class="stat-value"><strong>${{ number_format($totalValue, 2) }}</strong></span>
@@ -33,8 +34,11 @@
             @endif
         </div>
 
-        <button type="button" class="btn-secondary" onclick="openModal('edit-store-modal')">Izmeni prodavnicu</button>
-        <button type="button" class="btn-add" onclick="openModal()">Dodaj bundle</button>
+        <div class="header-actions">
+            <button type="button" class="btn-secondary" onclick="openModal('edit-store-modal')">Izmeni prodavnicu</button>
+            <button type="button" class="btn-secondary" onclick="openModal('email-templates-modal')">Email Templejti</button>
+            <button type="button" class="btn-add" onclick="openModal()">Dodaj bundle</button>
+        </div>
 
     </div>
 
@@ -267,6 +271,54 @@
 </div>
 
 
+
+{{----------------------MODAL ZA EMAIL TEMPLATE--------------------}}
+<div class="modal-overlay" id="email-templates-modal">
+    <div class="modal-box">
+        <h2>Email Template</h2>
+
+        @if ($errors->any())
+            <div class="errors">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('store.update-email-templates', $store) }}">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label>Inicijalni mejl</label>
+                <p class="modal-subtitle">Obavezno: @{{name}}, @{{ amount }}, @{{ store_name }}</p>
+                <textarea name="initial_email_template" rows="6">{{ old('initial_email_template', $initialEmailTemplate) }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Reminder mejl</label>
+                <p class="modal-subtitle">Obavezno: @{{name}}, @{{ amount }}, @{{ store_name }}, @{{ days_left }}</p>
+                <textarea name="reminder_email_template" rows="6">{{ old('reminder_email_template', $reminderEmailTemplate) }}</textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel-modal" onclick="closeModal('email-templates-modal')">Otkaži</button>
+                <button type="submit" class="btn-submit-modal">Sačuvaj</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if ($errors->has('initial_email_template') || $errors->has('reminder_email_template'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            openModal('email-templates-modal');
+        });
+    </script>
+@endif
+
 @if ($errors->any())
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -274,6 +326,8 @@
         });
     </script>
 @endif
+
+
 
 @vite(['resources/js/addBundle.js'])
 

@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Helpers\EmailTemplateHelper;
 use App\Models\Coupon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,27 +18,36 @@ class MyEmail extends Mailable
     use Queueable, SerializesModels;
 
     public Coupon $coupon;
+    public string $renderBody;
     /**
      * Create a new message instance.
      */
     public function __construct(Coupon $coupon)
     {
         $this->coupon = $coupon;
+
+        $store = $coupon->bundle->store;
+
+        if($store->initial_email_template != null){
+            $template = $store->initial_email_template;
+        }else{
+            $template = EmailTemplateHelper::getDefaultInitialTemplate();
+        }
+
+        $this->renderBody = EmailTemplateHelper::render($template, [
+            'name' => $coupon->receiver_name,
+            'amount' => number_format((float) $coupon->discount_amount, 2),
+            'store_name' => $store->name,
+        ]);
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Coupon Has Arrived'
+            subject: 'Your Coupon Has Arrived',
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
@@ -45,11 +55,6 @@ class MyEmail extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, Attachment>
-     */
     public function attachments(): array
     {
         return [];

@@ -56,6 +56,14 @@ class BundleController extends Controller
         ]);
     }
 
+    public function resendAll(Bundle $bundle)
+    {
+        Gate::authorize('workWith', $bundle->store);
+        $result = $this->bundleService->resendAllBundle($bundle);
+        $msg = 'posalto : '. $result['sent'] . 'preskoceno ' . $result['skipped'];
+        return redirect()->route('bundle.show', $bundle)->with('success', $msg);
+    }
+
 
     public function destroy(Bundle $bundle)
     {

@@ -47,9 +47,10 @@ class RegisterController extends Controller
             'name' => $validatedData['name'],
             'email' => $invite->email,
             'password' => Hash::make($validatedData['password']),
-            'role' => 'admin',
             'default_store_value_limit' => $invite->value_limit,
         ]);
+
+        $user->assignRole('admin');
 
         $invite->used_at = now();
         $invite->save();

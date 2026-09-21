@@ -25,7 +25,7 @@ class BundleService
                 $totalNewAmount += $coupon['discount_amount'];
 
                 $hasCouponDate = !empty($coupon['expires_at']);
-                $hasBundleDate = !empty($bundle['expires_at']);
+                $hasBundleDate = !empty($data['expires_at']);
 
                 if(!$hasBundleDate && !$hasCouponDate){
                     throw ValidationException::withMessages([
@@ -78,6 +78,28 @@ class BundleService
         }
 
         return $bundle;
+    }
+
+    public function resendAllBundle(Bundle $bundle): array
+    {
+        $coupons = $bundle->coupons;
+        $sentCount = 0;
+        $skippedCount = 0;
+
+        foreach ($coupons as $coupon) {
+            $wasSent = $this->couponService->resendNeededMail($coupon);
+
+            if ($wasSent) {
+                $sentCount++;
+            } else {
+                $skippedCount++;
+            }
+        }
+
+        return [
+            'sent' => $sentCount,
+            'skipped' => $skippedCount,
+        ];
     }
 
     public function deleteBundle(Bundle $bundle): void

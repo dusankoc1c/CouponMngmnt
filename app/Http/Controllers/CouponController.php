@@ -98,4 +98,18 @@ class CouponController extends Controller
 
         return redirect()->route('bundle.show', $bundle)->with('success', $msg);
     }
+
+    public function resendInitial(Coupon $coupon)
+    {
+        Gate::authorize('workWith', $coupon->bundle->store);
+        $this->couponService->resendInitialMail($coupon);
+        return redirect()->route('bundle.show', $coupon->bundle)->with('success', 'Poslati su pocetni mejlovi.');
+    }
+
+    public function resendReminder(Coupon $coupon)
+    {
+        Gate::authorize('workWith', $coupon->bundle->store);
+        $this->couponService->resendReminderMail($coupon);
+        return redirect()->route('bundle.show', $coupon->bundle)->with('success', 'Reminder mejl je ponovo poslat.');
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\CsvExportHelper;
 use App\Http\Requests\ExportCodesRequest;
 use App\Http\Requests\StoreStoreRequest;
+use App\Http\Requests\UpdateEmailTemplatesRequest;
 use App\Http\Requests\UpdateStoreRequest;
 use App\Models\Coupon;
 use App\Models\Store;
@@ -53,11 +54,15 @@ class StoreController extends Controller
 
         $bundles = $store->bundles;
         $totalValue = $this->storeService->calculateTotalValue($store);
+        $initialEmailTemplate = $this->storeService->getInitialEmailTemplate($store);
+        $reminderEmailTemplate = $this->storeService->getReminderEmailTemplate($store);
 
         return view('store.show', [
             'store' => $store,
             'bundles' => $bundles,
             'totalValue' => $totalValue,
+            'initialEmailTemplate' => $initialEmailTemplate,
+            'reminderEmailTemplate' => $reminderEmailTemplate,
         ]);
     }
 
@@ -105,5 +110,12 @@ class StoreController extends Controller
         $data = $request->validated();
 
         return $this->storeService->exportCodesToCsv($store, $data['bundle_ids'], $request);
+    }
+
+    public function updateEmailTemplates(UpdateEmailTemplatesRequest $request, Store $store)
+    {
+        $data = $request->validated();
+        $this->storeService->updateEmailTemplate($store, $data);
+        return redirect()->route('store.show', $store)->with('success', 'Store email templates updated successfully');
     }
 }

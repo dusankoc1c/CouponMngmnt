@@ -15,8 +15,9 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
     public function __construct(private AdminService $adminService){}
-    public function index(){
-        $admins = User::where('role', 'admin')->get();
+    public function index()
+    {
+        $admins = $this->adminService->getAllAdmins();
 
         return view('admins.index', ['admins' => $admins]);
     }

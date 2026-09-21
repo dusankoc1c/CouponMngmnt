@@ -17,7 +17,7 @@
     <div class="navbar-brand">Coupon Manager</div>
 
     <div class="navbar-user">
-        @if (Auth::user()->role == 'superadmin')
+        @if (Auth::user()->hasRole('superadmin'))
             <button type="button" class="btn-superadmin" onclick="openModal('export-all-modal')">Export All</button>
             <a href="{{ route('admins.index') }}" class="btn-superadmin">Admin Dash</a>
             <a href="{{ route('invite.create') }}" class="btn-superadmin">Send Invite</a>

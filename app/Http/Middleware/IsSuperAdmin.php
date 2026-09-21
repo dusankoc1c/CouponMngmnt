@@ -7,11 +7,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IsSuperAdmin
 {
-    public function handle($request, Closure $next): Response
+    public function handle(Request $request, Closure $next): Response
     {
-        if(auth()->user()->role != 'superadmin'){
+        if (!auth()->user()->hasRole('superadmin')) {
             abort(403);
         }
+
         return $next($request);
     }
 }

@@ -17,12 +17,14 @@ class SuperAdminSeeder extends Seeder
         $existingUser = User::where('email', 'superadmin@couponmanager.test')->first();
 
         if ($existingUser == null) {
-            User::create([
+            $newUser = User::create([
                 'name' => 'Super Admin',
                 'email' => 'superadmin@couponmanager.test',
-                'password' => Hash::make('superadmin123'),
-                'role' => 'superadmin',
+                'password' => Hash::make('SuperTajnaLozinka123'),
+                'default_store_value_limit' => null,
             ]);
+
+            $newUser->assignRole('superadmin');
         }
     }
 }
