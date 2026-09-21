@@ -39,5 +39,13 @@
  	    2. Invite limit -> User store limit -> Store limit
  	    3. StoreService metoda za proveru limita (CoponService i BundleService ga injektuju)
  	    4. Mesta provere : kreiranje bundla, dodavanje pojedincanog kupona, update kupona, csv import 
- - Redovno proveravanje da li je kod expired i menjanje statusa, dodato Expires_at kolona kuponima (ako nema expires at za kupone, uzima expires at od bundl-a) 
+ - Redovno proveravanje da li je kod expired i menjanje statusa, dodato Expires_at kolona kuponima (ako nema expires at za kupone, uzima expires at od bundl-a)
+
+
+## 21. Septembar
+
+ - Slanje vise mejlovo od jednom iz bundla reseno (prelazak na novog providera, MAIL PIT lokalno)
+ - Dodati za svaki bundle i coupon postoje opcije ponovnog rucnog slanja maila i inicijalni i reminder (klikom na resend bundle sve se salje)
+ - Dodati templejte za mejlove. Svaki deck dolazi da nekim default sadrzajem za mejl. Admini mogu da menjaju taj template 
+ - Laravel Spite (security) (zamenjene role/permisije OSTAJE security headers i rate limiting) 
  
