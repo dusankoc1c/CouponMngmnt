@@ -89,10 +89,15 @@ class StoreController extends Controller
             return $bundle->getTotalValue();
         });
 
+        $initialEmailTemplate = $this->storeService->getInitialEmailTemplate($store);
+        $reminderEmailTemplate = $this->storeService->getReminderEmailTemplate($store);
+
         return view('store.show', [
             'store' => $store,
             'bundles' => $bundles,
             'totalValue' => $totalValue,
+            'initialEmailTemplate' => $initialEmailTemplate,
+            'reminderEmailTemplate' => $reminderEmailTemplate,
         ]);
     }
 

@@ -17,20 +17,20 @@ Route::get('/', function () {
 // prikaz Register Stranice
 Route::get('/register', [RegisterController::class, 'index'])->name('register')->middleware(['guest', 'signed', 'nocache']);
 
-// Register
-Route::post('/register', [RegisterController::class, 'store'])->name('register.store')->middleware('guest');
+// Register - rate limiting
+Route::post('/register', [RegisterController::class, 'store'])->name('register.store')->middleware(['guest', 'throttle:6,1']);
 
 
 // prikaz Login Stranice
 Route::get('/login', [LoginController::class, 'index'])->name('login')->middleware(['guest', 'nocache']);
-// Login
-Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware('guest');
+// Login - rate limiting
+Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware(['guest', 'throttle:6,1']);
 //Logout
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 
 //Dashboard
 Route::get('/dashboard', function () {
-    if (auth()->user()->role == 'superadmin') {
+    if (auth()->user()->hasRole('superadmin')) {
         $stores = App\Models\Store::whereHas('user')->get();
     } else {
         $stores = auth()->user()->stores;
@@ -75,7 +75,7 @@ Route::get('/coupon/{coupon}/unsubscribe', [CouponController::class, 'unsubscrib
 
 // Admin invite
 Route::get('/superadmin/invite', [InviteController::class, 'create'])->name('invite.create')->middleware(['auth', 'superadmin']);
-Route::post('/superadmin/invite', [InviteController::class, 'store'])->name('invite.store')->middleware(['auth', 'superadmin']);
+Route::post('/superadmin/invite', [InviteController::class, 'store'])->name('invite.store')->middleware(['auth', 'superadmin', 'throttle:6,1']);
 
 // Admin Upravljanje adminima
 Route::get('/superadmin/admins', [AdminController::class, 'index'])->name('admins.index')->middleware(['auth', 'superadmin']);

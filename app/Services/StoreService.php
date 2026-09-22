@@ -33,6 +33,7 @@ class StoreService
         return $this->storeRepository->update($store, [
             'name' => $data['name'],
             'description' => $data['description'],
+            'reminder_days' => $data['reminder_days'],
         ]);
     }
 

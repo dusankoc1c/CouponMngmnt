@@ -7,7 +7,17 @@
     @vite(['resources/css/store.css'])
 </head>
 
-<body>
+@php
+    $modalToOpenOnError = '';
+
+    if ($errors->has('initial_email_template') || $errors->has('reminder_email_template')) {
+        $modalToOpenOnError = 'email-templates-modal';
+    } elseif ($errors->any()) {
+        $modalToOpenOnError = 'bundle-modal';
+    }
+@endphp
+
+<body data-open-modal-on-load="{{ $modalToOpenOnError }}">
 
 <div class="content">
     <a href="{{ route('dashboard') }}" class="back-link">&larr; Nazad na dashboard</a>
@@ -35,9 +45,9 @@
         </div>
 
         <div class="header-actions">
-            <button type="button" class="btn-secondary" onclick="openModal('edit-store-modal')">Izmeni prodavnicu</button>
-            <button type="button" class="btn-secondary" onclick="openModal('email-templates-modal')">Email Templejti</button>
-            <button type="button" class="btn-add" onclick="openModal()">Dodaj bundle</button>
+            <button type="button" class="btn-secondary" data-open-modal="edit-store-modal">Izmeni prodavnicu</button>
+            <button type="button" class="btn-secondary" data-open-modal="email-templates-modal">Email Templejti</button>
+            <button type="button" class="btn-add" data-open-modal="bundle-modal">Dodaj bundle</button>
         </div>
 
     </div>
@@ -63,10 +73,10 @@
                 <td>{{ $bundle->expires_at ? $bundle->expires_at->format('m/d/Y') : 'Not set' }}</td>
                 <td>
                     <div class="dropdown">
-                        <button type="button" class="action-link" onclick="toggleDropdown(this)">Actions &#9662;</button>
+                        <button type="button" class="action-link" data-toggle-dropdown>Actions &#9662;</button>
                         <div class="dropdown-menu">
                             <a href="{{ route('bundle.show', $bundle) }}" class="dropdown-item">View</a>
-                            <form method="POST" action="{{ route('bundle.destroy', $bundle) }}" onsubmit="return confirm('Obrisati ovaj bundle?')">
+                            <form method="POST" action="{{ route('bundle.destroy', $bundle) }}" data-confirm="Obrisati ovaj bundle?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="dropdown-item dropdown-item-danger">Delete</button>
@@ -84,7 +94,7 @@
     </table>
 
     <div class="export-bar">
-        <button type="button" class="btn-secondary" onclick="openModal('export-modal')">Export</button>
+        <button type="button" class="btn-secondary" data-open-modal="export-modal">Export</button>
     </div>
 </div>
 
@@ -124,7 +134,7 @@
             <div class="coupons-section">
                 <div class="coupons-section-header">
                     <h3>Kuponi</h3>
-                    <button type="button" class="btn-small" onclick="addCouponRow()">+ Dodaj kupon</button>
+                    <button type="button" class="btn-small" data-add-coupon-row>+ Dodaj kupon</button>
                 </div>
 
                 <table class="coupons-table">
@@ -144,7 +154,7 @@
             <div class="coupons-section">
                 <div class="coupons-section-header">
                     <h3>Mass Add Kupona</h3>
-                    <button type="button" class="btn-small" onclick="addTierRow()">+ Dodaj </button>
+                    <button type="button" class="btn-small" data-add-tier-row>+ Dodaj </button>
                 </div>
 
                 <table class="tier-table">
@@ -157,12 +167,10 @@
                     </thead>
                     <tbody id="tiers-tbody"></tbody>
                 </table>
-
-
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="closeModal()">Otkazi</button>
+                <button type="button" class="btn-cancel-modal" data-close-modal="bundle-modal">Otkazi</button>
                 <button type="submit" class="btn-submit-modal">Sačuvaj</button>
             </div>
         </form>
@@ -199,8 +207,13 @@
                 <textarea name="description">{{ old('description', $store->description) }}</textarea>
             </div>
 
+            <div class="form-group">
+                <label>Broj dana do reminder mejla (prazno = 20 podrazumevano)</label>
+                <input type="number" min="1" name="reminder_days" value="{{ old('reminder_days', $store->reminder_days) }}">
+            </div>
+
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="closeModal('edit-store-modal')">Otkaži</button>
+                <button type="button" class="btn-cancel-modal" data-close-modal="edit-store-modal">Otkaži</button>
                 <button type="submit" class="btn-submit-modal">Sačuvaj izmene</button>
             </div>
         </form>
@@ -214,7 +227,7 @@
         <h2>Export kupona</h2>
         <p class="modal-subtitle">Izaberi bundle-ove za export</p>
 
-        <form method="POST" action="{{ route('store.export-codes', $store) }}" onsubmit="closeModal('export-modal')">
+        <form method="POST" action="{{ route('store.export-codes', $store) }}" data-close-on-submit="export-modal">
             @csrf
 
             <div class="filter-row">
@@ -262,14 +275,13 @@
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="clearExportFilters('export-modal')">Obriši filtere</button>
-                <button type="button" class="btn-cancel-modal" onclick="closeModal('export-modal')">Otkaži</button>
+                <button type="button" class="btn-cancel-modal" data-clear-filters="export-modal">Obriši filtere</button>
+                <button type="button" class="btn-cancel-modal" data-close-modal="export-modal">Otkaži</button>
                 <button type="submit" class="btn-submit-modal">Export CSV</button>
             </div>
         </form>
     </div>
 </div>
-
 
 
 {{----------------------MODAL ZA EMAIL TEMPLATE--------------------}}
@@ -304,30 +316,12 @@
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="closeModal('email-templates-modal')">Otkaži</button>
+                <button type="button" class="btn-cancel-modal" data-close-modal="email-templates-modal">Otkaži</button>
                 <button type="submit" class="btn-submit-modal">Sačuvaj</button>
             </div>
         </form>
     </div>
 </div>
-
-@if ($errors->has('initial_email_template') || $errors->has('reminder_email_template'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            openModal('email-templates-modal');
-        });
-    </script>
-@endif
-
-@if ($errors->any())
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            openModal('bundle-modal');
-        });
-    </script>
-@endif
-
-
 
 @vite(['resources/js/addBundle.js'])
 

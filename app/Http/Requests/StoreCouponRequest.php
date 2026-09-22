@@ -29,6 +29,7 @@ class StoreCouponRequest extends FormRequest
             'discount_amount' => 'required|numeric|min:0',
             'send_date' => 'nullable|date',
             'expires_at' => 'nullable|date',
+            'send_immediately' => 'nullable|boolean',
         ];
     }
 }

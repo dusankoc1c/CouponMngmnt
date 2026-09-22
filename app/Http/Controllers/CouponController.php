@@ -94,7 +94,7 @@ class CouponController extends Controller
 
         $result = $this->couponService->importCsv($bundle, $file);
 
-        $msg = 'preskoceno ' . $result['skippedCount'];
+        $msg = 'preskoceno ' . $result['skippedCount'] .  ', vraceno u sistem' . $result['restoredCount'] . ', uvezeno kupona ' . $result['importedCount'];
 
         return redirect()->route('bundle.show', $bundle)->with('success', $msg);
     }

@@ -10,6 +10,7 @@
         "laravel/boost": "^2.8",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
+        "spatie/laravel-csp": "^3.29",
         "spatie/laravel-permission": "^8.3"
     },
     "require-dev": {

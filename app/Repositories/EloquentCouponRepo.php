@@ -34,4 +34,16 @@ class EloquentCouponRepo implements CouponRepositoryInterface
     {
         return Coupon::where('code', $code)->first();
     }
+
+    public function restore(Coupon $coupon): Coupon
+    {
+        $coupon->restore();
+
+        return $coupon;
+    }
+
+    public function findByCodeIncludingTrashed(string $code): ?Coupon
+    {
+        return Coupon::withTrashed()->where('code', $code)->first();
+    }
 }

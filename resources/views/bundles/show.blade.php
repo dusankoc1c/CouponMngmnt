@@ -6,7 +6,18 @@
     <title>{{ $bundle->name }}</title>
     @vite(['resources/css/store.css'])
 </head>
-<body>
+
+@php
+    $modalToOpenOnError = '';
+
+    if ($errors->has('csv_file')) {
+        $modalToOpenOnError = 'import-csv-modal';
+    } elseif ($errors->any()) {
+        $modalToOpenOnError = 'coupon-modal';
+    }
+@endphp
+
+<body data-open-modal-on-load="{{ $modalToOpenOnError }}">
 
 <div class="content">
     @if ($errors->any())
@@ -25,13 +36,14 @@
             <h1>{{ $bundle->name }}</h1>
             <div class="total-value">Ukupna vrednost : <strong>${{ number_format($bundle->getTotalValue(), 2) }}</strong></div>
         </div>
-
-        <button type="button" class="btn-secondary" onclick="openModal('import-csv-modal')">Import from CSV</button>
-        <button type="button" class="btn-add" onclick="openModal('coupon-modal')">Dodaj Kupon</button>
-        <form method="POST" action="{{ route('bundle.resend-all', $bundle) }}" onsubmit="return confirm('Poslati mejlove svim kuponima u ovom bundle-u?')" style="display:inline;">
-            @csrf
-            <button type="submit" class="btn-secondary">Resend All</button>
-        </form>
+        <div class="header-actions">
+            <button type="button" class="btn-secondary" data-open-modal="import-csv-modal">Import from CSV</button>
+            <button type="button" class="btn-add" data-open-modal="coupon-modal">Dodaj Kupon</button>
+            <form method="POST" action="{{ route('bundle.resend-all', $bundle) }}" data-confirm="Poslati mejlove svim kuponima u ovom bundle-u?" style="display:inline;">
+                @csrf
+                <button type="submit" class="btn-secondary">Resend All</button>
+            </form>
+        </div>
     </div>
 
     <table>
@@ -42,6 +54,7 @@
             <th>Email</th>
             <th>Amount</th>
             <th>Send Date</th>
+            <th>Send Immediately</th>
             <th>Status</th>
             <th>Initial Sent</th>
             <th>Reminder Sent</th>
@@ -58,6 +71,7 @@
                 <td>{{ $coupon->receiver_email }}</td>
                 <td>${{ number_format($coupon->discount_amount, 2) }}</td>
                 <td>{{ $coupon->send_date ? $coupon->send_date->format('m/d/Y') : 'Not set' }}</td>
+                <td>{{ $coupon->send_immediately }}</td>
                 <td>
                     @if($coupon->is_expired)
                         <span class="badge-expired">Istekao</span>
@@ -79,7 +93,7 @@
                 </td>
                 <td>
                     <div class="dropdown">
-                        <button type="button" class="action-link" onclick="toggleDropdown(this)">Actions &#9662;</button>
+                        <button type="button" class="action-link" data-toggle-dropdown>Actions &#9662;</button>
                         <div class="dropdown-menu">
                             <a href="{{ route('coupon.edit', $coupon) }}" class="dropdown-item">Edit</a>
 
@@ -102,7 +116,7 @@
                                 </form>
                             @endif
 
-                            <form method="POST" action="{{ route('coupon.destroy', $coupon) }}" onsubmit="return confirm('Obrisi kupon?')">
+                            <form method="POST" action="{{ route('coupon.destroy', $coupon) }}" data-confirm="Obrisi kupon?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="dropdown-item dropdown-item-danger">Delete</button>
@@ -159,12 +173,17 @@
             </div>
 
             <div class="form-group">
+                <label>Posalji Odmah</label>
+                <input type="checkbox" name="send_immediately" value="1">
+            </div>
+
+            <div class="form-group">
                 <label>Datum isteka (koristi bundle-ov bez unosa)</label>
                 <input type="date" name="expires_at">
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="closeModal('coupon-modal')">Otkazi</button>
+                <button type="button" class="btn-cancel-modal" data-close-modal="coupon-modal">Otkazi</button>
                 <button type="submit" class="btn-submit-modal">Sacuvaj</button>
             </div>
         </form>
@@ -189,24 +208,12 @@
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="closeModal('import-csv-modal')">Otkaži</button>
+                <button type="button" class="btn-cancel-modal" data-close-modal="import-csv-modal">Otkaži</button>
                 <button type="submit" class="btn-submit-modal">Uvezi</button>
             </div>
         </form>
     </div>
 </div>
-
-@if ($errors->any())
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            @if ($errors->has('csv_file'))
-            openModal('import-csv-modal');
-            @else
-            openModal('coupon-modal');
-            @endif
-        });
-    </script>
-@endif
 
 @vite(['resources/js/addBundle.js'])
 

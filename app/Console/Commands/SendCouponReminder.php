@@ -32,22 +32,21 @@ class SendCouponReminder extends Command
         $sentCount = 0;
 
         foreach ($coupons as $coupon) {
-            if ($coupon->email_sent_at == null) {
-                $this->info($coupon->code . ' -nema email');
-                continue;
-            }
+            $store = $coupon->bundle->store;
 
-            if ($coupon->bundle->expires_at != null && $coupon->bundle->expires_at->isPast()) {
-                $this->info($coupon->code . ' - bundle isteko');
-                continue;
+            if($store->reminder_days != null){
+                $reminderDays = $store->reminder_days;
+            }else{
+                $reminderDays = 20;
             }
 
             $lastSent = $coupon->last_sent_at ?? $coupon->email_sent_at;
 
-            $minutesPassed = $lastSent->diffInDays(now() < 20);
-            $this->info($coupon->code . ' - proslo minuta ' . $minutesPassed);
+            $daysPassed = $lastSent->diffInDays(now());
 
-            if ($minutesPassed < 1) {
+            $this->info($coupon->code . ' - proslo dana ' . $daysPassed .  '- od potrebnih : ' . $reminderDays);
+
+            if ($daysPassed < $reminderDays) {
                 $this->info($coupon->code . ' - nije ispunio uslov za vreme');
                 continue;
             }

@@ -31,9 +31,9 @@
                 <td>{{ $admin->email }}</td>
                 <td>{{ $admin->created_at->format('m/d/Y') }}</td>
                 <td>
-                    <button type="button" class="btn-secondary" onclick="openModal('edit-user-modal-{{ $admin->id }}')">Izmeni</button>
+                    <button type="button" class="btn-secondary" data-open-modal="edit-user-modal-{{ $admin->id }}">Izmeni</button>
 
-                    <form method="POST" action="{{ route('admins.destroy', $admin) }}" onsubmit="return confirm('Obrisi admina?')" style="display:inline;">
+                    <form method="POST" action="{{ route('admins.destroy', $admin) }}" data-confirm="Obrisi admina?" style="display:inline;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="action-link-danger">Obrisi</button>
@@ -71,7 +71,7 @@
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel-modal" onclick="closeModal('edit-user-modal-{{ $admin->id }}')">Otkaži</button>
+                    <button type="button" class="btn-cancel-modal" data-close-modal="edit-user-modal-{{ $admin->id }}">Otkaži</button>
                     <button type="submit" class="btn-submit-modal">Sačuvaj izmene</button>
                 </div>
             </form>

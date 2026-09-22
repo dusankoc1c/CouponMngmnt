@@ -21,9 +21,9 @@ class CsvExportHelper
             $file = fopen('php://output', 'w');
 
             if ($includeStoreColumn) {
-                fputcsv($file, ['Store Name', 'Bundle Name', 'Code', 'Receiver Name', 'Receiver Email', 'Amount', 'Send Date', 'Status', 'Created At', 'Expires At']);
+                fputcsv($file, ['Store Name', 'Bundle Name', 'Code', 'Receiver Name', 'Receiver Email', 'Amount', 'Send Date',  'Send Immediately', 'Status', 'Created At', 'Expires At']);
             } else {
-                fputcsv($file, ['Bundle Name', 'Code', 'Receiver Name', 'Receiver Email', 'Amount', 'Send Date', 'Status', 'Expires At']);
+                fputcsv($file, ['Bundle Name', 'Code', 'Receiver Name', 'Receiver Email', 'Amount', 'Send Date', 'Send Immediately', 'Status', 'Expires At']);
             }
 
             foreach ($coupons as $coupon) {
@@ -38,6 +38,11 @@ class CsvExportHelper
                 } else {
                     $sendDate = '';
                 }
+                if($coupon->send_immediately){
+                    $sendImmediately = 'True';
+                }else{
+                    $sendImmediately = 'False';
+                }
 
                 if ($includeStoreColumn) {
                     fputcsv($file, [
@@ -48,6 +53,7 @@ class CsvExportHelper
                         $coupon->receiver_email,
                         $coupon->discount_amount,
                         $sendDate,
+                        $sendImmediately,
                         $status,
                         $coupon->created_at->format('Y-m-d'),
                         $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : '',
@@ -60,6 +66,7 @@ class CsvExportHelper
                         $coupon->receiver_email,
                         $coupon->discount_amount,
                         $sendDate,
+                        $sendImmediately,
                         $status,
                         $coupon->created_at->format('Y-m-d'),
                         $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : '',

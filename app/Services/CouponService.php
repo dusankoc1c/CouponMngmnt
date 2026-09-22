@@ -109,7 +109,40 @@ class CouponService
             'receiver_email' => $couponData['receiver_email'],
             'send_date' => $couponData['send_date'] ?? null,
             'expires_at' => $expiresAt,
+            'send_immediately' => $couponData['send_immediately'],
         ];
+    }
+
+    public function couponMatchRow(Coupon $coupon, array $rowData): bool
+    {
+        if($coupon->receiver_name != $rowData['receiver_name']){
+            return false;
+        }
+        if($coupon->receiver_email != $rowData['receiver_email']){
+            return false;
+        }
+        if($coupon->discount_amount != $rowData['discount_amount']){
+            return false;
+        }
+        $couponSndDate = $coupon->send_date ? $coupon->send_date->format('Y-m-d') : null;
+        $rowSndDate = $rowData['send_date'] ? date('Y-m-d', strtotime($rowData['send_date'])) : null;
+
+        if($couponSndDate != $rowSndDate){
+            return false;
+        }
+
+        $couponExp = $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : null;
+        $rowExp = $rowData['expires_at'] ? date('Y-m-d', strtotime($rowData['expires_at'])) : null;
+
+        if($couponExp != $rowExp){
+            return false;
+        }
+
+        if($coupon->is_used !== $rowData['is_used']){
+            return false;
+        }
+
+        return true;
     }
 
     public function importCsv(Bundle $bundle, UploadedFile $file): array
@@ -117,9 +150,17 @@ class CouponService
         $handle = fopen($file->getRealPath(), 'r');
 
         $rowIndex = 0;
-        $rowsToImport = [];
-        $skippedCount = 0;
+
         $totalNewAmount = 0;
+        $columnOfset = 0;
+
+        $rowsToCreate = [];
+        $rowsToRestore = [];
+        $conflictedRows = [];
+
+        $rowsToMove = [];
+
+        $skippedCount = 0;
 
         while(($row = fgetcsv($handle)) !== false){
             $rowIndex++;
@@ -127,29 +168,37 @@ class CouponService
             \Log::info('Red ' . $rowIndex . ': ' . json_encode($row));
 
             if($rowIndex === 1){
+                if(isset($row[0]) && trim($row[0]) == 'Store Name'){
+                    $columnOfset = 1;
+                }
                 continue;
             }
 
-            $code = trim($row[1]);
-            $receiverName = trim($row[2]);
-            $receiverEmail = trim($row[3]);
-            $amount = trim($row[4]);
-            $sendDateRaw = trim($row[5]);
-            $statusRaw = trim($row[6]);
-            $createdAtRaw = trim($row[7]);
+            $code = trim($row[1 + $columnOfset]);
+            $receiverName = trim($row[2 + $columnOfset]);
+            $receiverEmail = trim($row[3 + $columnOfset]);
+            $amount = trim($row[4 + $columnOfset]);
+            $sendDateRaw = trim($row[5 + $columnOfset]);
+            $statusRaw = trim($row[6 + $columnOfset]);
+            $createdAtRaw = trim($row[7 + $columnOfset]);
 
-            if(isset($row[8])){
-                $expiresAtRaw = trim($row[8]);
+            if (!is_numeric($amount)) {
+                $skippedCount++;
+                continue;
+            }
+
+            if(isset($row[8 + $columnOfset])){
+                $expiresAtRaw = trim($row[8 + $columnOfset]);
             }else{
                 $expiresAtRaw = '';
             }
 
-            $codeExists = $this->couponRepository->findByCode($code);
-
-            if($codeExists != null ){
-                $skipedCount++;
-                continue;
-            }
+//            $codeExists = $this->couponRepository->findByCode($code);
+//
+//            if($codeExists != null ){
+//                $skippedCount++;
+//                continue;
+//            }
 
             $expiresAt = $this->resolveExpiresAt($bundle, $expiresAtRaw == '' ? null : $expiresAtRaw);
 
@@ -174,7 +223,7 @@ class CouponService
                 $isUsed = false;
             }
 
-            $rowsToImport[] = [
+            $rowData = [
                 'code' => $code,
                 'receiver_name' => $receiverName,
                 'receiver_email' => $receiverEmail,
@@ -185,16 +234,49 @@ class CouponService
                 'created_at_override' => $createdAtRaw,
             ];
 
-            $totalNewAmount += (float) $amount;
+            $existingCoupon = $this->couponRepository->findByCodeIncludingTrashed($code);
+            if($existingCoupon == null){
+                $rowsToCreate[] = $rowData;
+                $totalNewAmount += (float)$amount;
+                continue;
+            }
+
+            $fieldsMatch = $this->couponMatchRow($existingCoupon, $rowData);
+            if(!$fieldsMatch){
+                $conflictedRows[] = $code;
+                continue;
+            }
+
+            if($existingCoupon->trashed()){
+                $rowsToRestore[] = $existingCoupon;
+                $totalNewAmount += (float)$amount;
+            }else{
+                $skippedCount++;
+            }
+
+            $oldBundle = Bundle::withTrashed()->find($existingCoupon->bundle_id);
+            if($oldBundle != null && $oldBundle->trashed()){
+                $rowsToMove[] = $existingCoupon;
+                $totalNewAmount += (float)$amount;
+                continue;
+            }else{
+                $skippedCount++;
+            }
         }
 
         fclose($handle);
+
+        if(!empty($conflictedRows)){
+            throw ValidationException::withMessages([
+                'csv_file' => "Kodovi vec postoje sa drugacijim info" . implode(", ", $conflictedRows),
+            ]);
+        }
 
         $this->storeService->assertCanAddValue($bundle->store, (float)$totalNewAmount);
 
         $importedCount = 0;
 
-        foreach($rowsToImport as $row){
+        foreach($rowsToCreate as $row){
             $coupon = $this->couponRepository->create([
                 'bundle_id' => $bundle->id,
                 'code' => $row['code'],
@@ -214,9 +296,22 @@ class CouponService
             $importedCount++;
         }
 
+        $restoredCount = 0;
+
+        foreach($rowsToRestore as $row){
+            $this->couponRepository->restore($row);
+            $restoredCount++;
+        }
+
+        foreach($rowsToMove as $row){
+            $this->couponRepository->update($row, ['bundle_id' => $bundle->id]);
+            $restoredCount++;
+        }
+
         return [
-            'imported' => $importedCount,
-            'skipped' => $skippedCount,
+            'importedCount' => $importedCount,
+            'restoredCount' => $restoredCount,
+            'skippedCount' => $skippedCount,
         ];
     }
 

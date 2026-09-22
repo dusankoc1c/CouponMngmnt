@@ -15,4 +15,8 @@ interface CouponRepositoryInterface
     public function findById(int $id): ?Coupon;
 
     public function findByCode(string $code): ?Coupon;
+
+    public function restore(Coupon $coupon): Coupon;
+
+    public function findByCodeIncludingTrashed(string $code): ?Coupon;
 }

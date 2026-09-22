@@ -18,7 +18,7 @@
 
     <div class="navbar-user">
         @if (Auth::user()->hasRole('superadmin'))
-            <button type="button" class="btn-superadmin" onclick="openModal('export-all-modal')">Export All</button>
+            <button type="button" class="btn-superadmin" data-open-modal="export-all-modal">Export All</button>
             <a href="{{ route('admins.index') }}" class="btn-superadmin">Admin Dash</a>
             <a href="{{ route('invite.create') }}" class="btn-superadmin">Send Invite</a>
         @else
@@ -60,7 +60,7 @@
         <h2>Export svih prodavnica</h2>
         <p class="modal-subtitle">Izaberi prodavnice za export</p>
 
-        <form method="POST" action="{{ route('superadmin.export-all') }}" onsubmit="closeModal('export-all-modal')">
+        <form method="POST" action="{{ route('superadmin.export-all') }}" data-close-on-submit="export-all-modal">
             @csrf
 
             <div class="filter-row">
@@ -108,8 +108,8 @@
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel-modal" onclick="clearExportFilters('export-all-modal')">Obriši filtere</button>
-                <button type="button" class="btn-cancel-modal" onclick="closeModal('export-all-modal')">Otkaži</button>
+                <button type="button" class="btn-cancel-modal" data-clear-filters="export-all-modal">Obriši filtere</button>
+                <button type="button" class="btn-cancel-modal" data-close-modal="export-all-modal">Otkaži</button>
                 <button type="submit" class="btn-submit-modal">Export CSV</button>
             </div>
         </form>

@@ -53,6 +53,9 @@ class Coupon extends Model
         if ($this->send_date != null) {
             return false;
         }
+        if(!$this->send_immediately){
+            return false;
+        }
 
         try {
             Mail::to($this->receiver_email)->send(new MyEmail($this));
