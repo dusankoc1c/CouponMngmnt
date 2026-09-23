@@ -45,6 +45,11 @@
             <input type="date" name="send_date" value="{{ old('send_date', $coupon->send_date?->format('Y-m-d')) }}">
         </div>
 
+        <div class="form-group">
+            <label>Datum isteka</label>
+            <input type="date" name="expires_at" value="{{ old('expires_at', $coupon->expires_at?->format('Y-m-d')) }}" required>
+        </div>
+
         <button type="submit">Sacuvaj</button>
     </form>
 </div>

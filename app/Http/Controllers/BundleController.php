@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\MyEmail;
+use App\Helpers\CouponHelper;
+use App\Http\Requests\StoreBundleRequest;
 use App\Models\Bundle;
 use App\Models\Coupon;
 use App\Models\Store;
+use App\Services\BundleService;
+use Gate;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Log;
 
 class BundleController extends Controller
@@ -15,6 +17,7 @@ class BundleController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function __construct(private BundleService $bundleService){}
     public function index()
     {
         //
@@ -31,56 +34,45 @@ class BundleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Store $store)
+    public function store(StoreBundleRequest $request, Store $store)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'expires_at' => 'nullable|date',
-            'coupons' => 'nullable|array',
-            'coupons.*.receiver_name' => 'required_with:coupons|string|max:255',
-            'coupons.*.receiver_email' => 'required_with:coupons|email|max:255',
-            'coupons.*.discount_amount' => 'required_with:coupons|numeric|min:0',
-            'coupons.*.send_date' => 'nullable|date',
-        ]);
 
-        $bundle = Bundle::create([
-            'store_id' => $store->id,
-            'name' => $data['name'],
-            'description' => $data['description'],
-            'expires_at' => $data['expires_at'],
-        ]);
+        $data = $request->validated();
 
-        if (!empty($data['coupons'])) {
-            foreach ($data['coupons'] as $couponData) {
-                $coupon = Coupon::create([
-                    'bundle_id' => $bundle->id,
-                    'code' => Coupon::generateCode($bundle->name),
-                    'discount_amount' => $couponData['discount_amount'],
-                    'receiver_name' => $couponData['receiver_name'],
-                    'receiver_email' => $couponData['receiver_email'],
-                    'send_date' => $couponData['send_date'] ?? null,
-                ]);
-
-                if ($coupon->receiver_email != null && $coupon->send_date == null) {
-                    Log::info('treba da se posalje kupon ovaj - ' . $coupon->code . ' u ' . now());
-
-                    try {
-                        Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
-
-                        $coupon->email_sent_at = now();
-                        $coupon->save();
-
-                        Log::info('poslat kupon : ' . $coupon->code . now());
-                    } catch (\Exception $e) {
-                        Log::error('nije se poslao: ' . $coupon->code . $e->getMessage());
-                    }
-
-                    sleep(1);
-                }
-            }
-        }
+        $this->bundleService->createBundleWithCoupon($store, $data);
 
         return redirect()->route('store.show', $store)->with('success', 'Bundle je uspesno kreiran.');
+    }
+
+    public function show(Bundle $bundle)
+    {
+        Gate::authorize('workWith', $bundle->store);
+
+        $coupons = $bundle->coupons;
+
+        return view('bundles.show', [
+            'bundle' => $bundle,
+            'coupons' => $coupons,
+        ]);
+    }
+
+    public function resendAll(Bundle $bundle)
+    {
+        Gate::authorize('workWith', $bundle->store);
+        $result = $this->bundleService->resendAllBundle($bundle);
+        $msg = 'posalto : '. $result['sent'] . 'preskoceno ' . $result['skipped'];
+        return redirect()->route('bundle.show', $bundle)->with('success', $msg);
+    }
+
+
+    public function destroy(Bundle $bundle)
+    {
+        Gate::authorize('workWith', $bundle->store);
+
+        $store = $bundle->store;
+
+        $this->bundleService->deleteBundle($bundle);
+
+        return redirect()->route('store.show', $bundle->store)->with('success', 'bundle deleted');
     }
 }

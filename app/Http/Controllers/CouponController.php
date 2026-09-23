@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CouponHelper;
+use App\Http\Requests\ImportCodesRequest;
+use App\Http\Requests\StoreCouponRequest;
+use App\Http\Requests\UpdateCouponRequest;
 use App\Models\Bundle;
 use App\Models\Coupon;
+use App\Services\CouponService;
+use Gate;
 use Illuminate\Http\Request;
-use App\Mail\MyEmail;
-use Illuminate\Support\Facades\Mail;
 
 class CouponController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    public function __construct(private CouponService $couponService){}
     public function index()
     {
         //
@@ -29,31 +34,11 @@ class CouponController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Bundle $bundle)
+    public function store(StoreCouponRequest $request, Bundle $bundle)
     {
-        $data = $request->validate([
-            'receiver_name' => 'required|string|max:255',
-            'receiver_email' => 'required|email|max:255',
-            'discount_amount' => 'required|numeric|min:0',
-            'send_date' => 'nullable|date',
-        ]);
-
-        $coupon = Coupon::create([
-            'bundle_id' => $bundle->id,
-            'code' => Coupon::generateCode($bundle->name),
-            'discount_amount' => $data['discount_amount'],
-            'receiver_name' => $data['receiver_name'],
-            'receiver_email' => $data['receiver_email'],
-            'send_date' => $data['send_date'] ?? null,
-        ]);
-
-        if ($coupon->receiver_email != null && $coupon->send_date == null) {
-            Mail::to($coupon->receiver_email)->send(new MyEmail($coupon));
-            $coupon->email_sent_at = now();
-            $coupon->save();
-        }
+        $data = $request->validated();
+         $this->couponService->createCoupon($bundle, $data);
         return redirect()->route('bundle.show', $bundle)->with('success', 'Kupon je dodat.');
-
     }
 
     /**
@@ -77,18 +62,10 @@ class CouponController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Coupon $coupon)
+    public function update(UpdateCouponRequest $request, Coupon $coupon)
     {
-
-        $data = $request->validate([
-            'receiver_name' => 'required|string|max:255',
-            'receiver_email' => 'required|email|max:255',
-            'discount_amount' => 'required|numeric|min:0',
-            'send_date' => 'nullable|date',
-        ]);
-
-        $coupon->update($data);
-
+        $data = $request->validated();
+        $this->couponService->updateCoupon($coupon, $data);
         return redirect()->route('bundle.show', $coupon->bundle)->with('success', 'Kupon je izmenjen.');
     }
 
@@ -98,29 +75,41 @@ class CouponController extends Controller
     public function destroy(Coupon $coupon)
     {
         $bundle = $coupon->bundle;
-        $coupon->delete();
-
+        $this->couponService->deleteCoupon($coupon);
         return redirect()->route('bundle.show', $bundle)->with('success', 'Kupon je obrisan.');
     }
 
     public function toggleUsed(Coupon $coupon){
-        $coupon->is_used = !$coupon->is_used;
-
-        if($coupon->is_used){
-            $coupon->used_at = now();
-        }else{
-            $coupon->used_at = null;
-        }
-
-        $coupon->save();
-
+        $this->couponService->toggleUsedStatus($coupon);
         return redirect()->route('bundle.show', $coupon->bundle)->with('success', 'Kupon je izmenjen.');
     }
 
     public function unsubscribe(Coupon $coupon){
-        $coupon->subscribed = false;
-        $coupon->save();
-
+        $this->couponService->unsubscribeCoupon($coupon);
         return view('coupons.unsubscribe');
+    }
+
+    public function importCodes(ImportCodesRequest $request, Bundle $bundle){
+        $file = $request->file('csv_file');
+
+        $result = $this->couponService->importCsv($bundle, $file);
+
+        $msg = 'preskoceno ' . $result['skippedCount'] .  ', vraceno u sistem' . $result['restoredCount'] . ', uvezeno kupona ' . $result['importedCount'];
+
+        return redirect()->route('bundle.show', $bundle)->with('success', $msg);
+    }
+
+    public function resendInitial(Coupon $coupon)
+    {
+        Gate::authorize('workWith', $coupon->bundle->store);
+        $this->couponService->resendInitialMail($coupon);
+        return redirect()->route('bundle.show', $coupon->bundle)->with('success', 'Poslati su pocetni mejlovi.');
+    }
+
+    public function resendReminder(Coupon $coupon)
+    {
+        Gate::authorize('workWith', $coupon->bundle->store);
+        $this->couponService->resendReminderMail($coupon);
+        return redirect()->route('bundle.show', $coupon->bundle)->with('success', 'Reminder mejl je ponovo poslat.');
     }
 }

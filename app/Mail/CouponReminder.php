@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Helpers\EmailTemplateHelper;
 use App\Models\Coupon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,22 +18,45 @@ class CouponReminder extends Mailable
     use Queueable, SerializesModels;
 
     public Coupon $coupon;
-    public int $daniDoIsteka;
-    public string $unsubscribeLink;
+    public string $renderBody;
+    public string $daniDoIsteka;
+    public string $unsubscribeUrl;
     /**
      * Create a new message instance.
      */
     public function __construct(Coupon $coupon)
     {
         $this->coupon = $coupon;
-        if($coupon->bundle->expires_at != null){
-            $this->daniDoIsteka = now()->diffInDays($coupon->bundle->expires_at, false);
-        }else{
-            $this->daniDoIsteka = -1;
-        }
-        $this->unsubscribeLink = URL::signedRoute('coupons.unsubscribe', ['coupon' => $coupon->id]);
-    }
 
+        $this->daniDoIsteka = $this->calculateDaysLeft($coupon);
+
+        $store = $coupon->bundle->store;
+
+        if ($store->reminder_email_template != null) {
+            $template = $store->reminder_email_template;
+        } else {
+            $template = EmailTemplateHelper::getDefaultReminderTemplate();
+        }
+
+        $this->renderBody = EmailTemplateHelper::render($template, [
+            'name' => $coupon->receiver_name,
+            'amount' => number_format((float) $coupon->discount_amount, 2),
+            'store_name' => $store->name,
+            'days_left' => $this->daniDoIsteka,
+        ]);
+
+        $this->unsubscribeUrl = URL::signedRoute('coupons.unsubscribe', ['coupon' => $coupon->id]);
+    }
+    public function calculateDaysLeft(Coupon $coupon): string
+    {
+        if ($coupon->expires_at == null) {
+            return 'N/A';
+        }
+
+        $days = now()->diffInDays($coupon->expires_at, false);
+
+        return (string) $days;
+    }
     /**
      * Get the message envelope.
      */

@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/css/createStore.css',
                 'resources/css/dashboard.css',
                 'resources/css/addBundle.css',
+                'resources/css/admin-panel.css',
                 'resources/js/app.js',
                 'resources/css/addBundle.css'
             ],

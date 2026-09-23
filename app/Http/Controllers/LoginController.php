@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,13 +28,10 @@ class LoginController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(LoginRequest $request)
 
     {
-        $data = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required|string',
-        ]);
+        $data = $request->validated();
 
         if(Auth::attempt($data)){
             $request->session()->regenerate();

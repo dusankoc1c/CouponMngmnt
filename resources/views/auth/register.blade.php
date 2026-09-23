@@ -21,23 +21,40 @@
     <form method="POST" action="{{ route('register.store') }}">
         @csrf
 
-        <label>Ime</label>
-        <input type="text" name="name" value="{{ old('name') }}">
+        <input type="hidden" name="invite_id" value="{{ $invite->id }}">
 
-        <label>Email</label>
-        <input type="email" name="email" value="{{ old('email') }}">
+        <div class="form-group">
+            <label>Ime</label>
+            <input type="text" name="name" value="{{ old('name') }}">
+        </div>
 
-        <label>Lozinka</label>
-        <input type="password" name="password">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ $invite->email }}" readonly>
+        </div>
 
-        <label>Potvrda lozinke</label>
-        <input type="password" name="password_confirmation">
+        <div class="form-group">
+            <label>Lozinka</label>
+            <input type="password" name="password">
+        </div>
+
+        <div class="form-group">
+            <label>Potvrda lozinke</label>
+            <input type="password" name="password_confirmation">
+        </div>
 
         <button type="submit">Registruj se</button>
-
-        <a href="/" class="back-link"> Nazad na pocetnu -></a>
     </form>
 
 </div>
+
+<script>
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
+
 </body>
 </html>

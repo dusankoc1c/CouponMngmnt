@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -21,15 +20,17 @@ body {
 }
 
 .navbar-brand {
+    margin-left:250px;
     font-weight: 700;
     font-size: 1.1rem;
+    letter-spacing: -0.01em;
     color: #1a1a1a;
 }
 
 .navbar-user {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .navbar-user span {
@@ -46,29 +47,54 @@ body {
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: background-color 150ms ease;
 }
 
 .btn-logout:hover {
     background-color: #fef2f2;
 }
 
+.btn-logout:active {
+    transform: scale(0.97);
+}
+
+.btn-superadmin {
+    background-color: #eef2ff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 150ms ease;
+}
+
+.btn-superadmin:hover {
+    background-color: #e0e7ff;
+}
+
+.btn-superadmin:active {
+    transform: scale(0.97);
+}
+
 .content {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2.5rem 2rem;
 }
 
 .content h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.75rem;
 }
 
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
 }
 
 .card-add {
@@ -76,67 +102,118 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 160px;
+    min-height: 210px;
     background-color: transparent;
     border: 2px dashed #c7cad1;
-    border-radius: 12px;
+    border-radius: 14px;
     text-decoration: none;
     color: #6b7280;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease;
 }
 
 .card-add:hover {
     border-color: #4f46e5;
     color: #4f46e5;
+    background-color: #f5f6ff;
 }
 
 .card-add .plus-icon {
-    font-size: 2rem;
+    font-size: 2.3rem;
     line-height: 1;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
 }
 
-.card-add span {
-    font-size: 0.9rem;
+.card-add span:last-child {
+    font-size: 0.95rem;
     font-weight: 600;
 }
 
 .card-store {
-    display: block;
+    display: flex;
+    flex-direction: column;
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 1.5rem;
-    min-height: 160px;
+    border-radius: 14px;
+    padding: 1.75rem;
+    min-height: 210px;
     text-decoration: none;
     color: #1a1a1a;
-    transition: box-shadow 0.15s ease, transform 0.1s ease;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+
+.card-store::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #4f46e5;
 }
 
 .card-store:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+}
+
+.card-store-avatar {
+    width: 150px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #eef2ff;
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .card-store h3 {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     font-weight: 700;
+    letter-spacing: -0.01em;
     margin-bottom: 0.5rem;
 }
 
 .card-store p {
-    font-size: 0.85rem;
+    font-size: 0.87rem;
     color: #6b7280;
     line-height: 1.5;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.card-store .badge-count {
+.card-store-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.1rem;
+}
+
+.badge-count {
     display: inline-block;
-    margin-top: 1rem;
     background-color: #eef2ff;
     color: #4f46e5;
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.25rem 0.65rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+}
+
+.store-owner {
+    background-color: #f4f5f7;
+    color: #6b7280;
+    font-size: 1rem;
+    font-weight: 300;
+    text-align: center;
     border-radius: 999px;
 }
