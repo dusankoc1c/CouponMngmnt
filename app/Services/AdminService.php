@@ -26,7 +26,7 @@ class AdminService
         return $this->adminRepository->getAllAdmins();
     }
 
-    public function updateAdmin(User $admin, UpdateAdminRequest $data): User
+    public function updateAdmin(User $admin, array $data): User
     {
         if ($admin->hasRole('superadmin')) {
             abort(403, 'Nije moguce menjati superadmin nalog');

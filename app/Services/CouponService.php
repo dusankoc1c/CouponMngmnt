@@ -109,7 +109,7 @@ class CouponService
             'receiver_email' => $couponData['receiver_email'],
             'send_date' => $couponData['send_date'] ?? null,
             'expires_at' => $expiresAt,
-            'send_immediately' => $couponData['send_immediately'],
+            'send_immediately' => $couponData['send_immediately'] ?? false,
         ];
     }
 
