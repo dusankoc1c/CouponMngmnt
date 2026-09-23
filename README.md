@@ -78,5 +78,23 @@ IMPORT TEST CASES : ////////////////////////////////////
     	6. dodavanje tiera
     	7.brisanje filtera
     	8. racunanje tier totala
-    - rate limiting 
+    - rate limiting
+
+
+
+## 23. Septembar
+- Sanctum Personal Acces Token (zato sto ce frontend da bude na drugom serveru)
+- Auth point (login/logout) 
+- CRUD Store  
+- CRUD Bundle  
+- CRUD Coupon  
+- Send Mail (initial, reminder, send all) 
+- Update Email Template 
+- Admin/Invite 
+- CSV impoprt/export 
+- Register 
+- Coupon toogle-ussed/unsubscribe 
+- Coupon Mass Add
+- Edge case import 
+- Dokumentacija
  
