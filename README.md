@@ -84,17 +84,18 @@ IMPORT TEST CASES : ////////////////////////////////////
 
 ## 23. Septembar
 - Sanctum Personal Acces Token (zato sto ce frontend da bude na drugom serveru)
-- Auth point (login/logout) 
-- CRUD Store  
-- CRUD Bundle  
-- CRUD Coupon  
-- Send Mail (initial, reminder, send all) 
-- Update Email Template 
-- Admin/Invite 
-- CSV impoprt/export 
-- Register 
-- Coupon toogle-ussed/unsubscribe 
-- Coupon Mass Add
-- Edge case import 
-- Dokumentacija
- 
+- Napravljani SVI API-ji: 
+    - Auth point (login/logout) 
+    - CRUD Store  
+    - CRUD Bundle  
+    - CRUD Coupon  
+    - Send Mail (initial, reminder, send all) 
+    - Update Email Template 
+    - Admin/Invite 
+    - CSV impoprt/export 
+    - Register 
+    - Coupon toogle-ussed/unsubscribe 
+    - Coupon Mass Add
+    - Edge case import 
+    - Dokumentacija
+     
