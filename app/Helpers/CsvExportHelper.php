@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Http\Requests\ExportAllCodesRequest;
+use App\Models\Coupon;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -49,7 +50,7 @@ class CsvExportHelper
                         $coupon->bundle->store->name,
                         $coupon->bundle->name,
                         $coupon->code,
-                        $coupon->receiver_name,
+                        $coupon->{Coupon::RECEIVER_NAME},
                         $coupon->receiver_email,
                         $coupon->discount_amount,
                         $sendDate,

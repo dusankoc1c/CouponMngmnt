@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Bundle extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
     protected $fillable = ['store_id', 'name', 'description', 'expires_at'];
 
     protected $casts = [
@@ -28,11 +28,23 @@ class Bundle extends Model
 
     //broj kodova u bundle
     public function numberOfCodes(){
-        return $this->coupons->count();
+        if (array_key_exists('coupons_count', $this->attributes)) {
+            return $this->coupons_count;
+        }
+
+        if ($this->relationLoaded('coupons')) {
+            return $this->coupons->count();
+        }
+
+        return $this->coupons()->count();
     }
 
     public function getTotalValue(){
-        return $this->coupons->sum('discount_amount');
+        if (array_key_exists('coupons_sum_discount_amount', $this->attributes)) {
+            return $this->coupons_sum_discount_amount ?? 0;
+        }
+
+        return $this->coupons()->sum('discount_amount');
     }
 
     public function getName(){

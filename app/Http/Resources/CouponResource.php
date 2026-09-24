@@ -17,7 +17,7 @@ class CouponResource extends JsonResource
         return
         [
             'id'=>$this->id,
-            'bundle_id'=>$this->bundle_i,
+            'bundle_id'=>$this->bundle_id,
             'code'=>$this->code,
             'discount_amount' => $this->discount_amount,
             'receiver_name' => $this->receiver_name,

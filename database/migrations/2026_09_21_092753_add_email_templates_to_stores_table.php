@@ -23,9 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('stores', function (Blueprint $table) {
-            Schema::table('stores', function (Blueprint $table) {
-                $table->dropColumn(['initial_email_template', 'reminder_email_template']);
-            });
+            $table->dropColumn(['initial_email_template', 'reminder_email_template']);
         });
     }
 };

@@ -24,7 +24,10 @@ class SendScheduledCoupons extends Command
             ->whereNotNull('send_date')
             ->whereNull('email_sent_at')
             ->where('send_date', '<=', now())
-            ->get();
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })->get();
 
         $this->info('za slanje : ' . $coupons->count());
 

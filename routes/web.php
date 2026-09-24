@@ -81,7 +81,6 @@ Route::post('/superadmin/invite', [InviteController::class, 'store'])->name('inv
 Route::get('/superadmin/admins', [AdminController::class, 'index'])->name('admins.index')->middleware(['auth', 'superadmin']);
 //Admin brise admin
 Route::delete('superadmin/admins/{user}', [AdminController::class, 'destroy'])->name('admins.destroy')->middleware(['auth', 'superadmin']);
-Route::post('superadmin/admins/{user}', [AdminController::class, 'edit'])->name('admins.update')->middleware(['auth', 'superadmin']);
 
 
 //-----------------EXPORT---------------

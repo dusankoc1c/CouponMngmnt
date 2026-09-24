@@ -39,13 +39,9 @@ class StoreService
 
     public function calculateTotalValue(Store $store): float
     {
-        $total = 0;
-
-        foreach ($store->bundles as $bundle) {
-            $total += $bundle->getTotalValue();
-        }
-
-        return $total;
+        return (float) Coupon::whereHas('bundle', function ($query) use ($store) {
+            $query->where('store_id', $store->id);
+        })->sum('discount_amount');
     }
 
     public function assertCanAddValue(Store $store, float $additionalAmount): void
@@ -57,9 +53,9 @@ class StoreService
         $currentTotalValue = $this->calculateTotalValue($store);
         $newTotalValue = $currentTotalValue + $additionalAmount;
 
-        if($newTotalValue > $store->value_limit){
+        if ($newTotalValue > $store->value_limit) {
             throw ValidationException::withMessages([
-                'discount_amount' => 'Vrednost je premasila VALUE LIMIT zadatat od Super Admina'
+                'discount_amount' => __('errors.value_limit_exceeded')
             ]);
         }
     }

@@ -51,8 +51,10 @@ class StoreController extends Controller
     public function show(Store $store)
     {
         Gate::authorize('workWith', $store);
-
-        $bundles = $store->bundles;
+        $bundles = $store->bundles()
+            ->withCount('coupons')
+            ->withSum('coupons', 'discount_amount')
+            ->get();
         $totalValue = $this->storeService->calculateTotalValue($store);
         $initialEmailTemplate = $this->storeService->getInitialEmailTemplate($store);
         $reminderEmailTemplate = $this->storeService->getReminderEmailTemplate($store);
@@ -84,7 +86,10 @@ class StoreController extends Controller
 
         $this->storeService->updateStore($store, $data);
 
-        $bundles = $store->bundles;
+        $bundles = $store->bundles()
+            ->withCount('coupons')
+            ->withSum('coupons', 'discount_amount')
+            ->get();
         $totalValue = $bundles->sum(function ($bundle) {
             return $bundle->getTotalValue();
         });

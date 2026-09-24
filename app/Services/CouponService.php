@@ -16,7 +16,9 @@ class CouponService
 {
     public function __construct(
         private CouponRepositoryInterface $couponRepository,
-        private StoreService $storeService){}
+        private StoreService $storeService,
+        private CouponImportService $couponImportService
+    ){}
 
     public function createCoupon(Bundle $bundle, array $data): Coupon
     {
@@ -29,9 +31,15 @@ class CouponService
         return $coupon;
     }
 
+    // odvojena metoda ------------------------------------
+    public function createCouponRecordOnly(Bundle $bundle, array $couponData): Coupon
+    {
+        return $this->couponRepository->create($this->buildCouponAttributes($bundle, $couponData));
+    }
+
     public function createCouponInBundle(Bundle $bundle, array $couponData): bool
     {
-        $coupon = $this->couponRepository->create($this->buildCouponAttributes($bundle, $couponData));
+        $coupon = $this->createCouponRecordOnly($bundle, $couponData);
 
         return $coupon->sendInititalMail();
     }
@@ -145,138 +153,99 @@ class CouponService
         return true;
     }
 
+
     public function importCsv(Bundle $bundle, UploadedFile $file): array
     {
         $handle = fopen($file->getRealPath(), 'r');
 
         $rowIndex = 0;
-
         $totalNewAmount = 0;
         $columnOfset = 0;
 
         $rowsToCreate = [];
         $rowsToRestore = [];
         $conflictedRows = [];
-
         $rowsToMove = [];
 
         $skippedCount = 0;
+        $invalidCount = 0;
 
-        while(($row = fgetcsv($handle)) !== false){
+        while (($row = fgetcsv($handle)) !== false) {
             $rowIndex++;
 
-            \Log::info('Red ' . $rowIndex . ': ' . json_encode($row));
-
-            if($rowIndex === 1){
-                if(isset($row[0]) && trim($row[0]) == 'Store Name'){
+            if ($rowIndex === 1) {
+                if (isset($row[0]) && trim($row[0]) == 'Store Name') {
                     $columnOfset = 1;
                 }
                 continue;
             }
 
-            $code = trim($row[1 + $columnOfset]);
-            $receiverName = trim($row[2 + $columnOfset]);
-            $receiverEmail = trim($row[3 + $columnOfset]);
-            $amount = trim($row[4 + $columnOfset]);
-            $sendDateRaw = trim($row[5 + $columnOfset]);
-            $statusRaw = trim($row[6 + $columnOfset]);
-            $createdAtRaw = trim($row[7 + $columnOfset]);
+            $validacija = $this->couponImportService->sanitizeAndValidateInput($row, $columnOfset);
 
-            if (!is_numeric($amount)) {
-                $skippedCount++;
+            if (!$validacija['valid']) {
+                \Log::info("Red {$rowIndex} preskocen: " . $validacija['reason']);
+                $invalidCount++;
                 continue;
             }
 
-            if(isset($row[8 + $columnOfset])){
-                $expiresAtRaw = trim($row[8 + $columnOfset]);
-            }else{
-                $expiresAtRaw = '';
-            }
+            $sanitized = $validacija['data'];
 
-//            $codeExists = $this->couponRepository->findByCode($code);
-//
-//            if($codeExists != null ){
-//                $skippedCount++;
-//                continue;
-//            }
-
-            $expiresAt = $this->resolveExpiresAt($bundle, $expiresAtRaw == '' ? null : $expiresAtRaw);
-
-            if($sendDateRaw == ''){
-                $sendDate = null;
-            }else{
-                $sendDate = $sendDateRaw;
-            }
-
-            if($receiverEmail == ''){
-                $receiverEmail = null;
-            }
-
-            if($receiverName == ''){
-                $receiverName = null;
-;
-            }
-
-            if(strtolower($statusRaw) == 'used'){
-                $isUsed = true;
-            }else{
-                $isUsed = false;
-            }
+            $expiresAt = $this->resolveExpiresAt($bundle, $sanitized['expires_at_raw']);
 
             $rowData = [
-                'code' => $code,
-                'receiver_name' => $receiverName,
-                'receiver_email' => $receiverEmail,
-                'discount_amount' => $amount,
-                'send_date' => $sendDate,
+                'code' => $sanitized['code'],
+                'receiver_name' => $sanitized['receiver_name'],
+                'receiver_email' => $sanitized['receiver_email'],
+                'discount_amount' => $sanitized['discount_amount'],
+                'send_date' => $sanitized['send_date'],
                 'expires_at' => $expiresAt,
-                'is_used' => $isUsed,
-                'created_at_override' => $createdAtRaw,
+                'is_used' => $sanitized['is_used'],
+                'created_at_override' => $sanitized['created_at_override'],
             ];
 
-            $existingCoupon = $this->couponRepository->findByCodeIncludingTrashed($code);
-            if($existingCoupon == null){
+            $existingCoupon = $this->couponRepository->findByCodeIncludingTrashed($sanitized['code']);
+
+            if ($existingCoupon == null) {
                 $rowsToCreate[] = $rowData;
-                $totalNewAmount += (float)$amount;
+                $totalNewAmount += $sanitized['discount_amount'];
                 continue;
             }
 
             $fieldsMatch = $this->couponMatchRow($existingCoupon, $rowData);
-            if(!$fieldsMatch){
-                $conflictedRows[] = $code;
+            if (!$fieldsMatch) {
+                $conflictedRows[] = $sanitized['code'];
                 continue;
             }
 
-            if($existingCoupon->trashed()){
+            if ($existingCoupon->trashed()) {
                 $rowsToRestore[] = $existingCoupon;
-                $totalNewAmount += (float)$amount;
-            }else{
+                $totalNewAmount += $sanitized['discount_amount'];
+            } else {
                 $skippedCount++;
             }
 
             $oldBundle = Bundle::withTrashed()->find($existingCoupon->bundle_id);
-            if($oldBundle != null && $oldBundle->trashed()){
+            if ($oldBundle != null && $oldBundle->trashed()) {
                 $rowsToMove[] = $existingCoupon;
-                $totalNewAmount += (float)$amount;
-                continue;
-            }else{
+                $totalNewAmount += $sanitized['discount_amount'];
+            } else {
                 $skippedCount++;
             }
         }
 
         fclose($handle);
 
-        if(!empty($conflictedRows)){
+        if (!empty($conflictedRows)) {
             throw ValidationException::withMessages([
-                'csv_file' => "Kodovi vec postoje sa drugacijim info" . implode(", ", $conflictedRows),
+                'csv_file' => __('errors.coupon_codes_conflict', ['codes' => implode(", ", $conflictedRows)]),
             ]);
         }
 
-        $this->storeService->assertCanAddValue($bundle->store, (float)$totalNewAmount);
+        $this->storeService->assertCanAddValue($bundle->store, (float) $totalNewAmount);
 
         $importedCount = 0;
 
-        foreach($rowsToCreate as $row){
+        foreach ($rowsToCreate as $row) {
             $coupon = $this->couponRepository->create([
                 'bundle_id' => $bundle->id,
                 'code' => $row['code'],
@@ -288,8 +257,8 @@ class CouponService
                 'is_used' => $row['is_used'],
             ]);
 
-            if($row['created_at_override'] != ''){
-                $coupon->created_at  = $row['created_at_override'];
+            if ($row['created_at_override'] != '') {
+                $coupon->created_at = $row['created_at_override'];
                 $coupon->save();
             }
 
@@ -298,12 +267,12 @@ class CouponService
 
         $restoredCount = 0;
 
-        foreach($rowsToRestore as $row){
+        foreach ($rowsToRestore as $row) {
             $this->couponRepository->restore($row);
             $restoredCount++;
         }
 
-        foreach($rowsToMove as $row){
+        foreach ($rowsToMove as $row) {
             $this->couponRepository->update($row, ['bundle_id' => $bundle->id]);
             $restoredCount++;
         }
@@ -312,6 +281,7 @@ class CouponService
             'importedCount' => $importedCount,
             'restoredCount' => $restoredCount,
             'skippedCount' => $skippedCount,
+            'invalidCount' => $invalidCount,
         ];
     }
 
@@ -328,28 +298,28 @@ class CouponService
         }
 
         throw ValidationException::withMessages([
-            'expires_at' => 'Datum isteka je obavezan',
+            'expires_at' => __('errors.expires_at_required'),
         ]);
     }
 
 
-    public function assertResend(Coupon $coupon) : void
+    public function assertResend(Coupon $coupon): void
     {
-        if($coupon->receiver_email == null){
+        if ($coupon->receiver_email == null) {
             throw ValidationException::withMessages([
-                'receiver_email' => 'Nema mail primaoca',
+                'receiver_email' => __('errors.coupon_no_receiver_email'),
             ]);
         }
 
-        if($coupon->is_used == true){
+        if ($coupon->is_used == true) {
             throw ValidationException::withMessages([
-                'is_used' => "Kupon je iskoriscen"
+                'is_used' => __('errors.coupon_already_used'),
             ]);
         }
 
-        if($coupon->is_expired == true){
+        if ($coupon->is_expired == true) {
             throw ValidationException::withMessages([
-                'is_expired' => "Kupon je zastareo"
+                'is_expired' => __('errors.coupon_expired'),
             ]);
         }
     }
