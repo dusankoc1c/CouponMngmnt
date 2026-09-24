@@ -98,4 +98,20 @@ IMPORT TEST CASES : ////////////////////////////////////
     - Coupon Mass Add
     - Edge case import 
     - Dokumentacija
-     
+ 
+  ## 24. Septembar
+  -Ova metoda ne postoji Route::post('superadmin/admins/{user}', [AdminController::class, 'edit'])
+  - BundleResource za svaki bundle učitava sve kupone da bi izračunao broj i sumu. Optimizcaija :
+  -     1. agregacija u bazi umesto u kodu (withSum), Bundle model prvo pokusava da ucita gotove atribute coupon_count, ako ih nema tek onda padne na this->coupons()->count
+        2.  calculateTotalValue() u StoreService je imao foreach, zamenjeno sa Coupon::whereHas()->sum('discount_amoun')
+  -  SendScheduledCoupons mora da ispostuje i datume isticanja da se ne posalje ako je kupon vec istekaa
+  -  Kad se uvoze kuponi, ne smeju da prodju vrednosti za amount koje su negativne
+  -      1. Izvucena validacija i sanitizacija za import u CouponImportService klasu, zajedno sa metodom provere validnosti broja
+  -  BundleService.php:19 prvo kreira bundle, zatim kupon po kupon. Ako jedan kupon, slanje mejla ili generisanje koda padne, ostaje delimično kreiran bundle.
+  -      1. validacija ostaje ispred transakcije
+  -      2. kreiranje bundla i kreiranje svakog kupona preko createCouponRecordOnly(), tier se kreira kao celina kroz transakciju
+  -      3. ako bude neki exception iz bilo kog poziva create() poziva se rollback odma
+  -      4. vraca se niz iz transakcije [bundle, noviKuponiZaMejl]
+  -      5. prolazi se kroz niz novih kupona i salju se mejlovi van transakcije
+  -  Kada se obrise bundle, kuponi na njemu ostaju aktivni (delete cascade brisu se zajedno)
+  -  Testovi (SendScheduledCoupons.php, CouponIsExpired, CouponImportServiceTest, BundleDeleteCascadeTest)
