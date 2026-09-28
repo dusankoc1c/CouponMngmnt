@@ -29,15 +29,15 @@ class BundleController extends Controller
         return new BundleResource($bundle);
     }
 
-    public function show(Store $store, Bundle $bundle)
+    public function show(Bundle $bundle)
     {
-        Gate::authorize('workWith', $store);
+        Gate::authorize('workWith', $bundle->store);
         return new BundleResource($bundle);
     }
 
-    public function destroy(Store $store, Bundle $bundle)
+    public function destroy(Bundle $bundle)
     {
-        Gate::authorize('workWith', $store);
+        Gate::authorize('workWith', $bundle->store);
         $this->service->deleteBundle($bundle);
         return response()->json([
             'message' => ('The bundle was successfully deleted.'),
