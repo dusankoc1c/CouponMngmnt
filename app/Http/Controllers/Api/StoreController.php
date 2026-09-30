@@ -20,9 +20,9 @@ class StoreController
         $user = auth()->user();
 
         if ($user->hasRole('superadmin')) {
-            $stores = Store::whereHas('user')->get();
+            $stores = Store::whereHas('user')->with('user')->withCount('bundles')->get();
         } else {
-            $stores = $user->stores;
+            $stores = $user->stores()->with('user')->withCount('bundles')->get();
         }
 
         return StoreResource::collection($stores);
@@ -69,5 +69,14 @@ class StoreController
         $data = $request->validated();
 
         return $this->storeService->exportCodesToCsv($store, $data['bundle_ids'], $request);
+    }
+
+    public function getEmailTemplates(Store $store){
+        \Illuminate\Support\Facades\Gate::authorize('workWith', $store);
+
+        return response()->json([
+            'initial_email_template'=> $this->storeService->getInitialEmailTemplate($store),
+            'reminder_email_template'=> $this->storeService->getReminderEmailTemplate($store),
+        ]);
     }
 }

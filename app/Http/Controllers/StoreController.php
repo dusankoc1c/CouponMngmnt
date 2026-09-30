@@ -128,4 +128,5 @@ class StoreController extends Controller
         $this->storeService->updateEmailTemplate($store, $data);
         return redirect()->route('store.show', $store)->with('success', 'Store email templates updated successfully');
     }
+
 }

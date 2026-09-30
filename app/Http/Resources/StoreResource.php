@@ -21,6 +21,8 @@ class StoreResource extends JsonResource
                 'description'=>$this->description,
                 'value_limit' => $this->value_limit,
                 'reminder_days' => $this->reminder_days,
+                'owner' => $this->user?->name,
+                'bundles_count' => $this->bundles_count ?? $this->bundles()->count(),
                 'created_at' => $this->created_at,
         ];
     }

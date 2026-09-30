@@ -45,6 +45,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // toogle used coupon
     Route::post('/coupons/{coupon}/toogle-used', [CouponController::class, 'toogleUsed']);
+
+    //email template
+    Route::get('/stores/{store}/email-templates', [StoreController::class, 'getEmailTemplates']);
 });
 
 // SUPERADMIN roles
