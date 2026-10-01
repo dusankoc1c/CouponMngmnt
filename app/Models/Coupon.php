@@ -74,8 +74,6 @@ class Coupon extends Model
             return false;
         }
 
-        // ostatak metode, ne diraj
-
         try {
             Mail::to($this->receiver_email)->send(new MyEmail($this));
 
