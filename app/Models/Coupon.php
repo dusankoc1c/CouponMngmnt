@@ -54,6 +54,13 @@ class Coupon extends Model
     // slanje inicijalnog mejla ako nije zakazan T/F izvuceno iz kontrollera
     public function sendInititalMail(): bool
     {
+        \Log::info('sendInititalMail pozvan', [
+            'email_sent_at' => $this->email_sent_at,
+            'receiver_email' => $this->receiver_email,
+            'send_date' => $this->send_date,
+            'send_immediately' => $this->send_immediately,
+        ]);
+
         if ($this->email_sent_at != null) {
             return false;
         }
@@ -66,6 +73,8 @@ class Coupon extends Model
         if(!$this->send_immediately){
             return false;
         }
+
+        // ostatak metode, ne diraj
 
         try {
             Mail::to($this->receiver_email)->send(new MyEmail($this));

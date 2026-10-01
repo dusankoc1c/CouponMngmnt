@@ -45,7 +45,7 @@ class CouponReminder extends Mailable
             'days_left' => $this->daniDoIsteka,
         ]);
 
-        $this->unsubscribeUrl = URL::signedRoute('coupons.unsubscribe', ['coupon' => $coupon->id]);
+        $this->unsubscribeUrl = URL::signedRoute('api.coupons.unsubscribe', ['coupon' => $coupon->id]);
     }
     public function calculateDaysLeft(Coupon $coupon): string
     {

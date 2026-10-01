@@ -90,8 +90,9 @@ class CouponController extends Controller
     public function unsubscribe(Coupon $coupon)
     {
         $this->couponService->unsubscribeCoupon($coupon);
-        return response()->json([
-            'message' => 'Coupon unsubscribed successfully'
-        ]);
+
+        $frontendUrl = config('app.frontend_url');
+
+        return redirect()->away($frontendUrl . '/unsubscribed');
     }
 }
