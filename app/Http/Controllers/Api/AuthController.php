@@ -18,10 +18,13 @@ class AuthController extends Controller
         $data = $request->validated();
         $user = User::where('email', $data['email'])->first();
 
-        if($user == null || !Hash::check($data['password'], $user->password)) {
-            return back()->withErrors([
-                'username' => __('errors.wrong_login_credentials'),
-            ])->withInput();
+        if ($user == null || !Hash::check($data['password'], $user->password)) {
+            return response()->json([
+                'message' => 'Pogresni kredencijali.',
+                'errors' => [
+                    'email' => ['Pogresan email ili lozinka.'],
+                ],
+            ], 422);
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
@@ -63,7 +66,7 @@ class AuthController extends Controller
                 'id' => $newUser->id,
                 'name' => $newUser->name,
                 'email' => $newUser->email,
-                'roles' => $newUser->getRoleNames(),
+                'role' => $newUser->getRoleNames(),
             ]
         ]);
     }

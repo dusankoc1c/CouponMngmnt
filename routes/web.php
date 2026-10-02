@@ -15,7 +15,14 @@ Route::get('/', function () {
 
 
 // prikaz Register Stranice
-Route::get('/register', [RegisterController::class, 'index'])->name('register')->middleware(['guest', 'signed', 'nocache']);
+//Route::get('/register', [RegisterController::class, 'index'])->name('register')->middleware(['guest', 'signed', 'nocache']);
+// prikaz Register Stranice
+Route::get('/register', function (\Illuminate\Http\Request $request) {
+    $frontendUrl = config('app.frontend_url');
+    $inviteId = $request->query('invite');
+
+    return redirect()->away($frontendUrl . '/register?invite_id=' . $inviteId);
+})->name('register')->middleware(['guest', 'signed', 'nocache']);
 
 // Register - rate limiting
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store')->middleware(['guest', 'throttle:6,1']);
